@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/id_my_trips" android:title="My Trips"/>
+    <item android:id="@+id/id_my_profiles" android:title="My Profiles"/>
+    <item android:id="@+id/id_about" android:title="About"/>
+    <item android:id="@+id/id_sign_out" android:title="Sign out"/>
+
+</menu>
