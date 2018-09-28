@@ -1,0 +1,5 @@
+django >= 2.1
+djangorestframework >= 3.5
+django-push-notifications >= 1.6.0
+pylint >= 2.1.1
+djangorestframework-jwt
