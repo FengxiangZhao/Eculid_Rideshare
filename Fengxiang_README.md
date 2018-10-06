@@ -1,5 +1,32 @@
 ### Updates of Fengxiang Zhao 
 
+#### Week 2
+
+10/05/2018
+
+##### Goals
+
+Continue Client functionalities development
+
+##### What I have done
+
+- Autocomplete has added to the client
+- Post/Share Trip UI has added to the client
+- Change the structure of `MapsActivity` to make it more stable
+- Made some changes in dependencies to make it consistent
+- Discussed the API specification with Yida to be readied as interface in the future
+
+##### Todo 
+
+- Finish All UI development
+
+- Show route and ETA given address
+
+- API interface that communicate with server 
+
+
+
+
 #### Week 1        
 
 9/28/2018 

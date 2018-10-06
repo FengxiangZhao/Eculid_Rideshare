@@ -27,7 +27,7 @@ public class LoginActivity extends Activity {
         button.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+                Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
                 startActivity(intent);
             }
         });
