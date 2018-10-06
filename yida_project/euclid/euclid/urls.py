@@ -15,7 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import url, include
+from api import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    url(r'^driver/$', views.driverSchedule_list, name='driver-schedule-list'),
+    url(r'^driver/(?P<pk>[0-9]+)/$', views.driverschedule_detail, name='driver-schedule-detail'),
+    url(r'^rider/$', views.riderschedule_list, name='rider-schedule-list'),
+    url(r'^rider/(?P<pk>[0-9]+)/$', views.riderschedule_detail, name='rider-schedule-detail'),
 ]
