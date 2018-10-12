@@ -123,3 +123,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+##################################################################
+
+
+# emails
+EUCLID_CARSHARE_MAIL_ADDRESS = "euclid.carshare@gmail.com"
+EUCLID_CARSHARE_MAIL_PASSWORD = "sherlock8"
+
+
+AUTH_USER_MODEL = 'api.Client'
+
+DEFAULT_FROM_EMAIL = EUCLID_CARSHARE_MAIL_ADDRESS

@@ -40,3 +40,4 @@
 - Write test for database models
 - Complete email token verification part
   - (?)Add a table to store token and user relation
+

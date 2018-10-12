@@ -2,8 +2,10 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import DriverSchedule, RiderSchedule
-from .serializer import DriverScheduleSerializer, RiderScheduleSerializer
+from rest_framework import generics
+
+from .models import DriverSchedule, RiderSchedule, Client
+from .serializer import DriverScheduleSerializer, RiderScheduleSerializer, ClientSerializer
 
 # handles the driverschedule
 
@@ -116,3 +118,12 @@ def riderschedule_detail(request, pk):
     elif request.method == 'DELETE':
         schedule.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ClientList(generics.ListAPIView):
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
