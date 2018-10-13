@@ -13,7 +13,9 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -29,6 +31,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
@@ -41,7 +45,7 @@ public class MapsActivity extends AppCompatActivity implements
 
     private GoogleMap mMap;
     private boolean mPermissionDenied = false;
-
+    private View mMapView;
 
 
 
@@ -51,18 +55,35 @@ public class MapsActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        /* Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        try {
-            Intent intent =
-                    new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                            .build(this);
-            startActivityForResult(intent, 1);
-        } catch (GooglePlayServicesRepairableException e) {
-        } catch (GooglePlayServicesNotAvailableException e) {
-        }*/
+        mMapView = mapFragment.getView();
+
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                // TODO: Get info about the selected place.
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(place.getLatLng());
+                markerOptions.title(place.getLatLng().latitude + " : " + place.getLatLng().longitude);
+                mMap.clear();
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(),15.0f));
+
+                mMap.addMarker(markerOptions);
+                Log.i("autocomplete", "Place: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i("autocomplete", "An error occurred: " + status);
+            }
+        });
 
 
 
@@ -83,10 +104,10 @@ public class MapsActivity extends AppCompatActivity implements
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-/*
+
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
-        enableMyLocation();*/
+        enableMyLocation();
 
     }
 
@@ -102,6 +123,11 @@ public class MapsActivity extends AppCompatActivity implements
         } else if (mMap != null) {
             // Access to the location has been granted to the app.
             mMap.setMyLocationEnabled(true);
+            View locationButton = ((View) mMapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+// position on right bottom
+            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);rlp.setMargins(0,0,30,30);
 
 
         }
@@ -184,7 +210,7 @@ public class MapsActivity extends AppCompatActivity implements
         final AlertDialog.Builder normalDialog =
                 new AlertDialog.Builder(MapsActivity.this);
         normalDialog.setTitle("About");
-        normalDialog.setMessage("Build: alpha 0.1");
+        normalDialog.setMessage("Build: alpha 0.3");
         normalDialog.setNegativeButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override

@@ -37,7 +37,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class PostTripActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class postActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -54,24 +54,24 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private PostTask mAuthTask = null;
+    private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mLocationView;
-    private EditText mTimeView;
+    private AutoCompleteTextView fromView;
+    private EditText toView;
     private View mProgressView;
-    private View mPostView;
+    private View mLoginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_post_trip);
+        setContentView(R.layout.activity_post);
         // Set up the login form.
-        mLocationView = (AutoCompleteTextView) findViewById(R.id.email);
+        fromView = (AutoCompleteTextView) findViewById(R.id.from);
         populateAutoComplete();
 
-        mTimeView = (EditText) findViewById(R.id.password);
-        mTimeView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        toView = (EditText) findViewById(R.id.to);
+        toView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
@@ -90,7 +90,7 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
             }
         });
 
-        mPostView = findViewById(R.id.login_form);
+        mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
     }
 
@@ -110,7 +110,7 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
             return true;
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mLocationView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(fromView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)
@@ -138,37 +138,42 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
     }
 
 
-    private void attemptPost() {
+    /**
+     * Attempts to sign in or register the account specified by the login form.
+     * If there are form errors (invalid email, missing fields, etc.), the
+     * errors are presented and no actual login attempt is made.
+     */
+    private void attemptLogin() {
         if (mAuthTask != null) {
             return;
         }
 
         // Reset errors.
-        mLocationView.setError(null);
-        mTimeView.setError(null);
+        fromView.setError(null);
+        toView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mLocationView.getText().toString();
-        String password = mTimeView.getText().toString();
+        String email = fromView.getText().toString();
+        String password = toView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isTimeValid(password)) {
-            mTimeView.setError(getString(R.string.error_invalid_password));
-            focusView = mTimeView;
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            toView.setError(getString(R.string.error_invalid_password));
+            focusView = toView;
             cancel = true;
         }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mLocationView.setError(getString(R.string.error_field_required));
-            focusView = mLocationView;
+            fromView.setError(getString(R.string.error_field_required));
+            focusView = fromView;
             cancel = true;
-        } else if (!isAddressValid(email)) {
-            mLocationView.setError(getString(R.string.error_invalid_email));
-            focusView = mLocationView;
+        } else if (!isEmailValid(email)) {
+            fromView.setError(getString(R.string.error_invalid_email));
+            focusView = fromView;
             cancel = true;
         }
 
@@ -180,19 +185,19 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new PostTask(email, password);
+            mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
         }
     }
 
-    private boolean isAddressValid(String email) {
-        //to be implemented
-        return true;
+    private boolean isEmailValid(String email) {
+        //TODO: Replace this with your own logic
+        return email.contains("@");
     }
 
-    private boolean isTimeValid(String password) {
-        //to be implemented
-        return true;
+    private boolean isPasswordValid(String password) {
+        //TODO: Replace this with your own logic
+        return password.length() > 4;
     }
 
     /**
@@ -206,12 +211,12 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mPostView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mPostView.animate().setDuration(shortAnimTime).alpha(
+            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mPostView.setVisibility(show ? View.GONE : View.VISIBLE);
+                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
                 }
             });
 
@@ -227,7 +232,7 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mPostView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -268,10 +273,10 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
     private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
         //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(PostTripActivity.this,
+                new ArrayAdapter<>(postActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-        mLocationView.setAdapter(adapter);
+        fromView.setAdapter(adapter);
     }
 
 
@@ -286,17 +291,17 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
     }
 
     /**
-     * Represents an asynchronous communitcation with server
+     * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class PostTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mTime;
-        private final String mLocation;
+        private final String mEmail;
+        private final String mPassword;
 
-        PostTask(String time, String location) {
-            mTime = time;
-            mLocation = time;
+        UserLoginTask(String email, String password) {
+            mEmail = email;
+            mPassword = password;
         }
 
         @Override
@@ -310,7 +315,13 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
                 return false;
             }
 
-
+            for (String credential : DUMMY_CREDENTIALS) {
+                String[] pieces = credential.split(":");
+                if (pieces[0].equals(mEmail)) {
+                    // Account exists, return true if the password matches.
+                    return pieces[1].equals(mPassword);
+                }
+            }
 
             // TODO: register the new account here.
             return true;
@@ -324,8 +335,8 @@ public class PostTripActivity extends AppCompatActivity implements LoaderCallbac
             if (success) {
                 finish();
             } else {
-                mTimeView.setError(getString(R.string.error_incorrect_password));
-                mTimeView.requestFocus();
+                toView.setError(getString(R.string.error_incorrect_password));
+                toView.requestFocus();
             }
         }
 
