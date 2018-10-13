@@ -10,31 +10,33 @@ class ClientManager(BaseUserManager):
     '''
     A basic client manager
     '''
-    def create_user(self, username, case_email, password, phone):
-        if not case_email:
-            raise ValueError('Users must have an case_email address')
+    def create_user(self, username, email, password, phone):
+        if not email:
+            raise ValidationError("Email address cannot be empty.")
+        elif not validate_case_email(email):
+            raise ValidationError("The email address provided is not a valid CWRU email address.")
 
-        client = Client(
-            username=username,
-            case_email=case_email,
-            phone=phone
+        user = self.model(
+            username,
+            email,
+            phone
         )
-        client.set_password(password)
-        client.save(using=self._db)
-        return client
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
-    def create_superuser(self, username, case_email, password, phone):
-        client = self.create_user(username,
-                                case_email,
+    def create_superuser(self, username, email, password, phone):
+        user = self.create_user(username,
+                                email,
                                 password,
                                 phone
-                            )
-        client.is_staff = True
-        client.is_active = True
-        client.is_superuser = True
-        client.is_email_verified = True
-        client.save(using=self._db)
-        return client
+                                )
+        user.is_staff = True
+        user.is_active = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+
 
 class Client(AbstractBaseUser, PermissionsMixin):
     '''
@@ -57,15 +59,14 @@ class Client(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email', 'phone']
     objects = ClientManager()
 
-    def clean_case_email(self, case_email):
+    def clean_email(self, email):
         '''
         Validate the case email field when saving to database
         Args:
-            case_email: the case email field
+            email: the case email field
         '''
-        if not validate_case_email(case_email):
+        if not validate_case_email(email):
             raise ValidationError("The email address provided is not a valid CWRU email address.")
-
 
 
 class DriverSchedule(models.Model):
@@ -75,7 +76,7 @@ class DriverSchedule(models.Model):
         origin: A point field stores the coordinates of the driver's start
         destination:  A point field stores the coordinates of the driver's end
         created_time: A datetime field indicates when is this schedule created
-        modified_time: A datetime field incates when is this schedule modified
+        modified_time: A datetime field indicates when is this schedule modified
         scheduled_departure_datetime: A datetime field indicates when driver would like to departure
         scheduled_departure_time_range_in_minute: A small integer indicates the range of from the scheduled_departure_datetime that driver
             would like to departure
@@ -110,7 +111,7 @@ class RiderSchedule(models.Model):
         origin: A point field stores the coordinates of the driver's start
         destination:  A point field stores the coordinates of the driver's end
         created_time: A datetime field indicates when is this schedule created
-        modified_time: A datetime field incates when is this schedule modified
+        modified_time: A datetime field indicates when is this schedule modified
         scheduled_departure_datetime: A datetime field indicates when driver would like to departure
         scheduled_departure_time_range_in_minute: A small integer indicates the range of from the scheduled_departure_datetime that driver
             would like to departure
