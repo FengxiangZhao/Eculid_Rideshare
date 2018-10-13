@@ -1,5 +1,37 @@
 ### Updates of Fengxiang Zhao 
 
+
+
+#### Week 3
+
+10/12/2018
+
+##### Goals
+
+Continue Client functionalities development
+
+##### What I have done
+
+- Autocomplete is now able to interact with ride/post function
+- Post/Share has added more functionalities and is ready to communicate with server
+- Applied changes of MapsActivity to make it more reachable(e.g, there was a overlap between the search bar and my location buttom)
+- Settings UI added to be used in myProfile
+- Test with Google Map Console that make sure Place SDK goes well. 
+- Continued to discussed the API specification with Yida.
+
+##### Todo 
+
+- Network protocol implementation (send/receive query by JSON) 
+
+- analysis users input and transfer to JSON
+
+- continue work on UI to make it more reachable and good-looking
+
+
+
+
+
+
 #### Week 2
 
 10/05/2018

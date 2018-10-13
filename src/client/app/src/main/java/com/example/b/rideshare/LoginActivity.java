@@ -3,11 +3,13 @@ package com.example.b.rideshare;
 
 import android.os.Bundle;
 
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -23,12 +25,14 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         button = (Button)findViewById(R.id.loginButton);
-
+        final Activity act = this;
         button.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
+
+                Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                 startActivity(intent);
+
             }
         });
 

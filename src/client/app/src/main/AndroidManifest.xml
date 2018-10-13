@@ -57,11 +57,14 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".MapsActivity2"
-            android:label="@string/title_activity_maps2" />
+            android:name=".postActivity"
+            android:label="@string/title_activity_post" />
         <activity
-            android:name=".PostTripActivity"
-            android:label="@string/title_activity_post_trip"></activity>
+            android:name=".FindActivity"
+            android:label="@string/title_activity_find" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

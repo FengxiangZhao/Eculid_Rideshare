@@ -20,7 +20,4 @@
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         />
 
-
-
-
 </FrameLayout>
