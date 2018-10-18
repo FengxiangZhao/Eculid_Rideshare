@@ -42,17 +42,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_maps">
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_maps"/>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
@@ -63,8 +53,20 @@
             android:name=".FindActivity"
             android:label="@string/title_activity_find" />
         <activity
+            android:name=".MapsActivity2"
+            android:label="@string/title_activity_maps2" />
+        <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/title_activity_login">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
     </application>
 
 </manifest>

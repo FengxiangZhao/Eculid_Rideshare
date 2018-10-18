@@ -2,6 +2,33 @@
 
 
 
+#### Week 4
+
+10/18/2018
+
+##### Goals
+
+Finished Client functionalities development
+
+##### What I have done
+
+- A route and eta will should when destination/original location given
+- Made UI of `MapsActivity` more reachable, with directly entering the from/to, and a next button will direct user to post/share activity 
+- Merged the Activity of post/share to one and user can differentiate them by using switch button there
+- Login page enhanced. With the interface of communicating with Server.
+- Tried send/receive packets from server, but not finished yet. Make many tests on `LoginActivity` to make it work. 
+- Continued to discussed the API specification with Yida.
+
+##### Todo 
+
+- Continue to working on network protocol implementation (send/receive query by JSON) 
+- Using Token given by server and communities with it. 
+- Ready to move to the integration parse.
+
+
+
+
+
 #### Week 3
 
 10/12/2018
