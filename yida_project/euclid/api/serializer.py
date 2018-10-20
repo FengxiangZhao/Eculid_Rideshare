@@ -1,9 +1,7 @@
-from django.conf import settings
-
+# rest framework
 from rest_framework import serializers
-
-from .models import DriverSchedule, RiderSchedule
-
+# local
+from .models import DriverSchedule, RiderSchedule, Client
 from .verifications import validate_case_email
 
 
@@ -12,7 +10,7 @@ class ClientSerializer(serializers.HyperlinkedModelSerializer):
     rider_posts = serializers.PrimaryKeyRelatedField(many=True, queryset=RiderSchedule.objects.all())
 
     class Meta:
-        model = settings.AUTH_USER_MODEL
+        model = Client
         fields = ('id', 'username', 'phone', 'email', 'driver_posts', 'rider_posts')
 
     def validate_email(self, value):
@@ -28,6 +26,13 @@ class ClientSerializer(serializers.HyperlinkedModelSerializer):
             raise serializers.ValidationError("The email address provided is not a valid CWRU email address.")
         return value
 
+class ClientRegistrationSerializer(serializers.ModelSerializer):
+    '''
+    A model serializer for registration information
+    '''
+    class Meta:
+        model = Client
+        fields = ('id', 'username', 'phone', 'email', 'password')
 
 class DriverScheduleSerializer(serializers.ModelSerializer):
     '''

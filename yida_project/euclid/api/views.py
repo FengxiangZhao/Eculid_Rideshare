@@ -1,129 +1,127 @@
-from rest_framework import status
+# rest framework
+from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from rest_framework import generics
-
+from rest_framework.reverse import reverse
+# local
+from .permissions import IsOwner, IsVerifiedUserOrReadOnly
 from .models import DriverSchedule, RiderSchedule, Client
-from .serializer import DriverScheduleSerializer, RiderScheduleSerializer, ClientSerializer
+from .serializer import DriverScheduleSerializer, RiderScheduleSerializer, ClientSerializer, ClientRegistrationSerializer
 
-# handles the driverschedule
-
-@api_view(['GET', 'POST'])
-def driverSchedule_list(request):
-    """
-    List all driver schedules
-    request: User's request to the server
-        'GET'  : returns a list of driverschdule
-        'POST' : uploades a new driverschedule
-    """
-    if request.method == 'GET':
-        schedule = DriverSchedule.objects.all()
-        serializer = DriverScheduleSerializer(schedule, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
-        serializer = DriverScheduleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['GET'])
+def api_root(request, format=None):
+    '''
+    provide an entry point for the API Views in the form of http links
+    '''
+    return Response({
+        'clients': reverse('client-list', request=request, format=format),
+        'client registration' : reverse('client-registration', request=request, format=format),
+        'driver schedule': reverse('driver-schedule-list', request=request, format=format),
+        'rider schedule' : reverse('rider-schedule-list', request=request, format=format)
+    })
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def driverschedule_detail(request, pk):
-    """
-    Retrieve, update or delete a specific driverschedule.
-    request : User's request
-    pk      : The primary key index of the specific driverschedule in the database
-                If the pk does not exist, return 404-NOT-FOUND
+class DriverScheduleList(generics.ListCreateAPIView):
+    '''
+    List all driver schedules related to the user
+        'GET'  : retrieves a list of DriverSchedule
+        'POST' : uploads a new DriverSchedule
+    '''
+    permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
+    serializer_class = DriverScheduleSerializer
 
-        'GET'    : returns the specific driverschedule indexed by pk
-        'PUT'    : updates the specific driverschedule indexed by pk
-        'DELETE' : deletes the specific driverschedule indexed by pk
-    """
-    try:
-        schedule = DriverSchedule.objects.get(pk=pk)
-    except DriverSchedule.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    def get_queryset(self):
+        return DriverSchedule.objects.all().filter(owner=self.request.user)
 
-    if request.method == 'GET':
-        serializer = DriverScheduleSerializer(schedule)
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-    elif request.method == 'PUT':
-        serializer = DriverScheduleSerializer(schedule, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class DriverScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Retrieve, update or delete a specific DriverSchedule.
+        'GET'    : retrieves the specific DriverSchedule indexed by pk
+        'PUT'    : updates the specific DriverSchedule indexed by pk
+        'DELETE' : deletes the specific DriverSchedule indexed by pk
+    '''
+    permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
+    serializer_class = DriverScheduleSerializer
 
-    elif request.method == 'DELETE':
-        schedule.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_queryset(self):
+        return DriverSchedule.objects.all().filter(owner=self.request.user)
 
+class RiderScheduleList(generics.ListCreateAPIView):
+    '''
+    List all rider schedules related to the client
+        'GET'  : retrieves a list of RiderSchedule related to the client
+        'POST' : uploads a new RiderSchedule
+    '''
+    permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
+    serializer_class = RiderScheduleSerializer
 
-# Rider schedule handler
+    def get_queryset(self):
+        return RiderSchedule.objects.all().filter(owner=self.request.user)
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-@api_view(['GET', 'POST'])
-def riderschedule_list(request):
-    """
-    List all riderschedules
-    request: User's request to the server
-        'GET'  : returns a list of riderschedule
-        'POST' : uploads a new riderschedule
-    """
-    if request.method == 'GET':
-        schedule = RiderSchedule.objects.all()
-        serializer = RiderScheduleSerializer(schedule, many=True)
-        return Response(serializer.data)
+class RiderScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Retrieve, update or delete a specific RiderSchedule.
+        'GET'    : retrieves the specific RiderSchedule indexed by pk
+        'PUT'    : updates the specific RiderSchedule indexed by pk
+        'DELETE' : deletes the specific RiderSchedule indexed by pk
+    '''
+    permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
+    serializer_class = RiderScheduleSerializer
 
-    elif request.method == 'POST':
-        serializer = RiderScheduleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        return RiderSchedule.objects.all().filter(owner=self.request.user)
 
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def riderschedule_detail(request, pk):
-    """
-    Retrieve, update or delete a specific riderschedule.
-    request : User's request
-    pk      : The primary key index of the specific riderschedule in the database
-                If the pk does not exist, return 404-NOT-FOUND
-
-        'GET'    : returns the specific riderschedule indexed by pk
-        'PUT'    : updates the specific riderschedule indexed by pk
-        'DELETE' : deletes the specific riderschedule indexed by pk
-    """
-    try:
-        schedule = RiderSchedule.objects.get(pk=pk)
-    except RiderSchedule.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = RiderScheduleSerializer(schedule)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = RiderScheduleSerializer(schedule, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        schedule.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 class ClientList(generics.ListAPIView):
-    queryset = Client.objects.all()
+    '''
+    List client's own information
+        'GET' : retrieves the client's information as a list
+    '''
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ClientSerializer
 
-class UserDetail(generics.RetrieveAPIView):
-    queryset = Client.objects.all()
+    def get_queryset(self):
+        '''
+        Obtain the query set for the API View.
+        Only returns self, if user is authenticated
+        '''
+        return Client.objects.all().filter(username=self.request.user.username)
+
+class ClientDetail(generics.RetrieveUpdateAPIView):
+    '''
+    Retrieve, and update a specific client.
+    Client could only have the permission for their own information.
+        'GET' : retrieves the specific client indexed by pk
+        'PUT' : updates the specific client indexed by pk
+    '''
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ClientSerializer
+
+    def get_queryset(self):
+        '''
+        Obtain the query set for the API View.
+        Only returns self, if user is authenticated
+        '''
+        return Client.objects.all().filter(username=self.request.user.username)
+
+
+class ClientRegistration(generics.CreateAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = ClientRegistrationSerializer
+
+    def perform_create(self, serializer):
+        # Assumption that the serializer.is_valid() has been ran before perfore_create
+        user = Client.objects.create_user(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email'],
+            password=serializer.validated_data['password'],
+            phone=serializer.validated_data['phone'],
+        )
