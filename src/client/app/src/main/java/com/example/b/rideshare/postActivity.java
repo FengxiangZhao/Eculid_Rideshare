@@ -3,6 +3,12 @@ package com.example.b.rideshare;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -18,7 +24,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.view.menu.MenuView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,18 +36,26 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
+
+import com.google.android.gms.location.places.Place;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class postActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class postActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>, NumberPicker.OnValueChangeListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -61,16 +79,34 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
     private EditText toView;
     private View mProgressView;
     private View mLoginFormView;
+    private PlaceSerializable from, to;
+    private DatePicker dp;
+    private Calendar calendar;
+    private int year;
+    private int month;
+    private int day;
+    private int hour;
+    private int min;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
+        from = (PlaceSerializable) getIntent().getSerializableExtra("from");
+        to = (PlaceSerializable) getIntent().getSerializableExtra("to");
+
         // Set up the login form.
         fromView = (AutoCompleteTextView) findViewById(R.id.from);
-        populateAutoComplete();
+        fromView.setText(from.getAddress());
+        fromView.setEnabled(false);
 
         toView = (EditText) findViewById(R.id.to);
+        toView.setText(to.getAddress());
+        toView.setEnabled(false);
+        //     dp_init();
+
+
         toView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -92,49 +128,45 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-    }
 
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
+        ((EditText) findViewById(R.id.seat_num)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-        getLoaderManager().initLoader(0, null, this);
-    }
-
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(fromView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;
-    }
-
-    /**
-     * Callback received when a permissions request has been completed.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
             }
-        }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (count > 0 && (Integer.parseInt(s.toString()) < 1 || Integer.parseInt(s.toString()) > 7))
+                    ((EditText) ((EditText) findViewById(R.id.seat_num))).setError("seats can be only 1-7");
+                else
+                    ((EditText) ((EditText) findViewById(R.id.seat_num))).setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+    }
+
+
+    public void changeTime(View v) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        Date date = new Date();
+        //set theme as 3 as the THEME_HOLO_LIGHT
+        TimePickerDialog dialog = new TimePickerDialog(postActivity.this, 3, this, date.getHours(), date.getMinutes(), true);
+        dialog.show();
+    }
+
+    public void changeDate(View v) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        Date date = new Date();
+        DatePickerDialog dialog = new DatePickerDialog(postActivity.this, this, date.getYear(), date.getMonth(), date.getDate());
+        //disable past date
+        dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+        dialog.show();
     }
 
 
@@ -160,19 +192,10 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            toView.setError(getString(R.string.error_invalid_password));
-            focusView = toView;
-            cancel = true;
-        }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
             fromView.setError(getString(R.string.error_field_required));
-            focusView = fromView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            fromView.setError(getString(R.string.error_invalid_email));
             focusView = fromView;
             cancel = true;
         }
@@ -190,15 +213,6 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         }
     }
 
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
 
     /**
      * Shows the progress UI and hides the login form.
@@ -234,6 +248,27 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
+    }
+
+    public void selectNumSeats(View v) {
+       /* String[] choices = {"1","2","3","4","5","6","7"};
+        final Dialog d = new Dialog(postActivity.this);
+        d.setTitle("Choose Number of Seats you can provide");
+        d.setContentView(R.layout.number_picker);
+        final NumberPicker np = (NumberPicker) d.findViewById(R.id.dialog_number_picker);
+        np.setMaxValue(7);
+        np.setMinValue(1);
+        np.setWrapSelectorWheel(false);
+        np.setOnValueChangedListener(this);
+        d.show();*/
+
+        Log.i("postActivity", "selectNumSeatscalled");
+    }
+
+
+    @Override
+    public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+//        ((EditText)findViewById(R.id.seat_num)).setText(newVal);
     }
 
     @Override
@@ -277,6 +312,38 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         fromView.setAdapter(adapter);
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        EditText time = (EditText) findViewById(R.id.date_edittext);
+        String monthFormatted,dateFormatted;
+
+        if (month < 10) {
+            monthFormatted = "0" + month + 1;
+        } else {
+            monthFormatted = String.valueOf(month + 1);
+        }
+
+        if (dayOfMonth < 10) {
+            dateFormatted = "0" + month + 1;
+        } else {
+            dateFormatted = String.valueOf(month + 1);
+        }
+
+        time.setText("" + year + "-" + monthFormatted + "-" + dateFormatted);
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        EditText time = (EditText) findViewById(R.id.time_edittext);
+        String minuteFormatted;
+        if (minute < 10) {
+            minuteFormatted = "0" + minute;
+        } else {
+            minuteFormatted = String.valueOf(minute);
+        }
+        time.setText(String.valueOf("" + hourOfDay + ":" + minuteFormatted));
     }
 
 
