@@ -1,6 +1,6 @@
 # rest framework
 from rest_framework import generics, permissions
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 # local
@@ -9,23 +9,24 @@ from .models import DriverSchedule, RiderSchedule, Client
 from .serializer import DriverScheduleSerializer, RiderScheduleSerializer, ClientSerializer, ClientRegistrationSerializer
 
 @api_view(['GET'])
+@permission_classes((permissions.AllowAny,)) # Allow any to view the API root
 def api_root(request, format=None):
     '''
     provide an entry point for the API Views in the form of http links
     '''
     return Response({
-        'clients': reverse('client-list', request=request, format=format),
-        'client registration' : reverse('client-registration', request=request, format=format),
-        'driver schedule': reverse('driver-schedule-list', request=request, format=format),
-        'rider schedule' : reverse('rider-schedule-list', request=request, format=format)
+        'Client Registration': reverse('client-registration', request=request, format=format),
+        'Client Token Authorization' : reverse('token-auth', request=request, format=format),
+        'Client Token Refresh' : reverse('token-refresh', request=request, format=format),
+        'Client Information': reverse('client', request=request, format=format),
+        'Driver Schedule': reverse('driver-schedule-list', request=request, format=format),
+        'Rider Schedule' : reverse('rider-schedule-list', request=request, format=format)
     })
 
 
 class DriverScheduleList(generics.ListCreateAPIView):
     '''
-    List all driver schedules related to the user
-        'GET'  : retrieves a list of DriverSchedule
-        'POST' : uploads a new DriverSchedule
+    List all driver schedules related to the user or Create new driver schedule
     '''
     permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
     serializer_class = DriverScheduleSerializer
@@ -38,10 +39,7 @@ class DriverScheduleList(generics.ListCreateAPIView):
 
 class DriverScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
     '''
-    Retrieve, update or delete a specific DriverSchedule.
-        'GET'    : retrieves the specific DriverSchedule indexed by pk
-        'PUT'    : updates the specific DriverSchedule indexed by pk
-        'DELETE' : deletes the specific DriverSchedule indexed by pk
+    Retrieve, update or delete a specific DriverSchedule
     '''
     permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
     serializer_class = DriverScheduleSerializer
@@ -51,9 +49,7 @@ class DriverScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class RiderScheduleList(generics.ListCreateAPIView):
     '''
-    List all rider schedules related to the client
-        'GET'  : retrieves a list of RiderSchedule related to the client
-        'POST' : uploads a new RiderSchedule
+    List all rider schedules related to the client or Create new rider schedule
     '''
     permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
     serializer_class = RiderScheduleSerializer
@@ -67,9 +63,6 @@ class RiderScheduleList(generics.ListCreateAPIView):
 class RiderScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
     '''
     Retrieve, update or delete a specific RiderSchedule.
-        'GET'    : retrieves the specific RiderSchedule indexed by pk
-        'PUT'    : updates the specific RiderSchedule indexed by pk
-        'DELETE' : deletes the specific RiderSchedule indexed by pk
     '''
     permission_classes = (permissions.IsAuthenticated, IsVerifiedUserOrReadOnly, IsOwner)
     serializer_class = RiderScheduleSerializer
@@ -80,37 +73,15 @@ class RiderScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-class ClientList(generics.ListAPIView):
+class CurrentClient(generics.RetrieveUpdateAPIView):
     '''
-    List client's own information
-        'GET' : retrieves the client's information as a list
-    '''
-    permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = ClientSerializer
-
-    def get_queryset(self):
-        '''
-        Obtain the query set for the API View.
-        Only returns self, if user is authenticated
-        '''
-        return Client.objects.all().filter(username=self.request.user.username)
-
-class ClientDetail(generics.RetrieveUpdateAPIView):
-    '''
-    Retrieve, and update a specific client.
-    Client could only have the permission for their own information.
-        'GET' : retrieves the specific client indexed by pk
-        'PUT' : updates the specific client indexed by pk
+    Retrieve, or update the current client that is logged in
     '''
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ClientSerializer
 
-    def get_queryset(self):
-        '''
-        Obtain the query set for the API View.
-        Only returns self, if user is authenticated
-        '''
-        return Client.objects.all().filter(username=self.request.user.username)
+    def get_object(self):
+        return self.request.user
 
 
 class ClientRegistration(generics.CreateAPIView):

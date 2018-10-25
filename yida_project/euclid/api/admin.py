@@ -25,10 +25,10 @@ class ClientCreationForm(forms.ModelForm):
             client.save()
         return client
 
-        def clean_email(self, email):
-            if not validate_case_email(email):
-                raise forms.ValidationError("The email address provided is not a valid CWRU email address.")
-            return email
+    def clean_email(self, email):
+        if not validate_case_email(email):
+            raise forms.ValidationError("The email address provided is not a valid CWRU email address.")
+        return email
 
 class ClientAdmin(UserAdmin):
     add_form = ClientCreationForm
@@ -53,6 +53,9 @@ class ClientAdmin(UserAdmin):
     search_fields = ('username', 'email',)
     ordering = ('username', 'email',)
     filter_horizontal = ()
+
+    def get_readonly_fields(self, request, obj=None):
+        return self.readonly_fields + ['email']
 
 
 admin.site.register(Client, ClientAdmin)

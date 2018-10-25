@@ -6,12 +6,10 @@ from .verifications import validate_case_email
 
 
 class ClientSerializer(serializers.HyperlinkedModelSerializer):
-    driver_posts = serializers.PrimaryKeyRelatedField(many=True, queryset=DriverSchedule.objects.all())
-    rider_posts = serializers.PrimaryKeyRelatedField(many=True, queryset=RiderSchedule.objects.all())
 
     class Meta:
         model = Client
-        fields = ('id', 'username', 'phone', 'email', 'driver_posts', 'rider_posts')
+        fields = ('id', 'username', 'phone', 'email')
 
     def validate_email(self, value):
         '''
