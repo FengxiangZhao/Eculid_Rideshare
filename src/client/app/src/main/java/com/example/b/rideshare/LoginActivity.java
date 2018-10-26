@@ -325,8 +325,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            RequestQueue queue = Volley.newRequestQueue(LoginActivity.this);
-            String url ="http://www.google.com";
+            String url ="https://api.extramisc.com/api";
             JSONObject request = new JSONObject();
             try {
                 request.put("Username","politica");
@@ -338,7 +337,33 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
 // Request a string response from the provided URL.
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(com.android.volley.Request.Method.POST,url,request,new Response.List
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(com.android.volley.Request.Method.POST,url,request,new Response.Listener()) {
+                {
+                    @Override
+                    public void onResponse(JSONObject response){
+                    pDialog.hide();
+
+                    Log.d("Reponse", response.toString());
+
+                    Toast.makeText(getApplicationContext(), response.optString("name"), Toast.LENGTH_LONG).show();
+                }
+
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        volleyError.printStackTrace();
+
+                        Log.d("Error = ", volleyError.toString());
+
+                        pDialog.hide();
+                    }
+                }){
+                    @Override
+                    protected Map<String, String> getParams(){
+                        return params;
+                    };
+                }
+            };
 
 // Add the request to the RequestQueue. queue.add(jsonObjectRequest);
             Log.i("login","Response is: "+ response.substring(0,500));
