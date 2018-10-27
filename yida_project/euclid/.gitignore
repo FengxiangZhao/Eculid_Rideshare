@@ -1,5 +1,5 @@
 .idea/
 venv/
 db.sqlite3
-api/migrations/
+*/migrations/
 */__pycache__/

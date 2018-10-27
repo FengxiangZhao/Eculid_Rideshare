@@ -16,11 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
-from api import views
-
-
+from .views import api_root
 
 urlpatterns = [
+    url(r'^$', api_root),
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
+    url(r'^', include('euclid_userauth.urls')),
+    url(r'^', include('euclid_schedule.urls')),
+    url(r'^', include('euclid_verification.urls')),
 ]

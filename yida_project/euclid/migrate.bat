@@ -1,0 +1,2 @@
+python manage.py makemigrations euclid_schedule euclid_userauth euclid_verification
+python manage.py migrate

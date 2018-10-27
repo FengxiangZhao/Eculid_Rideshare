@@ -1,14 +1,7 @@
+# package
 import re
-
-import os
-
-import uuid
-
+# django
 from django.conf import settings
-
-from django.core.mail import EmailMessage
-
-from django.template import loader
 
 # A Case ID pattern, recoginizes lower-case alphanumeric in the form <Three letter><1-9999>
 CASE_ID_PATTERN = re.compile(r"^[a-z]{3}((?!0))[0-9]{1,4}$")

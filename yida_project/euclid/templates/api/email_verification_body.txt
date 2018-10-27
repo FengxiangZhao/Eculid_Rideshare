@@ -1,6 +1,6 @@
 Hello {{ username }},
 
 Verify your email with the following link:
-{{ url }}/api/verify/?token={{ token }}
+{{ url }}/email/verify/?token={{ token }}
 
 Thanks,
