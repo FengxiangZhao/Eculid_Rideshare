@@ -308,6 +308,10 @@ public class MapsActivity2 extends AppCompatActivity implements
 
     }
 
+    public void showCost() {
+        //TODO: SHOW COST/ETA
+    }
+
     public void goNext(View v) {
         Button b = (Button)findViewById(R.id.next);
         Intent intent = new Intent(MapsActivity2.this, postActivity.class);

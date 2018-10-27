@@ -2,6 +2,31 @@
 
 
 
+#### Week 5
+
+10/26/2018
+
+##### Goals
+
+Start working on communication with server
+
+##### What I have done
+
+- Finalized the API standard communication with server
+- Use `JsonRequest` that allow client communicate with server
+- Request Token from server and use it as authentication. 
+- Small update of `PostActivity`
+- send request to server, but not finished. (need to show sth if user want to find trip)
+- Continue to the translation to integration phase with Yida
+
+##### Todo 
+
+- Working on communicate with server.
+- Able to refresh Token in a given period(otherwise it will expire and require login again)
+- Make `register account` into the client
+
+
+
 #### Week 4
 
 10/18/2018

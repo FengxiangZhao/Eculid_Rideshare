@@ -42,6 +42,28 @@
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <EditText
+                    android:id="@+id/time_edittext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:hint="Time"
+                    android:imeActionId="6"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="datetime"
+                    android:maxLines="1"
+                    android:onClick="changeTime"
+                    android:singleLine="true" />
+
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <AutoCompleteTextView
@@ -120,10 +142,10 @@
                 android:layout_height="wrap_content">
 
                 <EditText
-                    android:id="@+id/time_edittext"
+                    android:id="@+id/time_timewaiting"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Time"
+                    android:hint="How long you are willing to wait"
                     android:imeActionId="6"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
@@ -132,6 +154,7 @@
                     android:focusable="false"
                     android:clickable="true"
                     android:maxLines="1"
+                    android:editable="false"
                     android:singleLine="true" />
 
 
