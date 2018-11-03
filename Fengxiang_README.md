@@ -2,6 +2,32 @@
 
 
 
+#### Week 6
+
+11/02/2018
+
+##### Goals
+
+Implementation of communication with server
+
+##### What I have done
+
+- Complete the registration for users
+- Discussed about how to start our integration (With note `Meeting Minutes.md`)
+- Some changes of `LoginActivity` (Added a helper method but waiting for more integration)
+- Discussed something about our algorithm related to distribute orders. 
+
+
+##### Todo 
+
+- Keep working on communicate with server.
+- Start Integration and design algorithm
+- Make sure our minimum useable product is online. 
+
+
+
+
+
 #### Week 5
 
 10/26/2018
