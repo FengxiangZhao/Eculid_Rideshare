@@ -1,0 +1,11 @@
+
+
+3. create a gunicorn start up bash script, as shown in the `gunicorn_start.sh` at the folder
+edit the variables so that the thing matches with your setting.
+
+To make the file a shell script, run this.
+```
+sudo chmod +x gunicorn_start.sh
+```
+
+
