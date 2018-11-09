@@ -56,7 +56,11 @@ class ClientAdmin(UserAdmin):
     filter_horizontal = ()
 
     def get_readonly_fields(self, request, obj=None):
-        return self.readonly_fields + ['email']
+        # return self.readonly_fields + ['email']
+        if obj:
+            return self.readonly_fields + ['email']
+        else:
+            return self.readonly_fields
 
 
 admin.site.register(Client, ClientAdmin)

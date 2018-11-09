@@ -12,6 +12,7 @@ def api_root(request, format=None):
     return Response({
         'Client Information': reverse('client', request=request, format=format),
         'Client Registration': reverse('client-registration', request=request, format=format),
+        'Client Password Change' : reverse('client-password-change', request=request, format=format),
         'Client Token Authorization' : reverse('token-auth', request=request, format=format),
         'Client Token Refresh' : reverse('token-refresh', request=request, format=format),
         'Driver Schedule': reverse('driver-schedule-list', request=request, format=format),

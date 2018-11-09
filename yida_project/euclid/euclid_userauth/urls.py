@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^account/$', views.CurrentClient.as_view(), name='client'),
     url(r'^account/', include('rest_framework.urls')),
     url(r'^account/register/$', views.ClientRegistration.as_view(), name='client-registration'),
+    url(r'^account/password/change/$', views.ClientPasswordChange.as_view(), name='client-password-change'),
     url(r'^token/authorize/', obtain_jwt_token, name='token-auth'),
     url(r'^token/refresh/', refresh_jwt_token, name='token-refresh'),
 ]

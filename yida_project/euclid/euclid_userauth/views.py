@@ -1,9 +1,13 @@
+# django
+from django.contrib.auth import update_session_auth_hash
 # rest framework
 from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework import status
 # local
 from .permissions import IsAnonymousOrReadOnly
 from .models import Client
-from .serializers import ClientSerializer, ClientRegistrationSerializer
+from .serializers import ClientSerializer, ClientRegistrationSerializer, ClientPasswordChangeSerializer
 from euclid_verification.models import EmailVerificationToken
 
 
@@ -33,3 +37,26 @@ class ClientRegistration(generics.CreateAPIView):
         token = EmailVerificationToken.objects.create_email_verification_token(user, save=False)
         token.send_verification_email()
         token.save()
+
+
+class ClientPasswordChange(generics.GenericAPIView):
+    """
+    An endpoint for changing password.
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = ClientPasswordChangeSerializer
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def put(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.object.set_password(serializer.data.get("new_password"))
+        self.object.save()
+        # make sure the user stays logged in
+        update_session_auth_hash(request, self.object)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
