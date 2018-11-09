@@ -3,15 +3,8 @@ package com.example.b.rideshare;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -24,9 +17,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.v7.view.menu.MenuView;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -36,21 +27,35 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
-import com.google.android.gms.location.places.Place;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -76,17 +81,13 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
 
     // UI references.
     private AutoCompleteTextView fromView;
-    private EditText toView;
+    private EditText toView,seat,date,time,time_waiting,time_sharing;
     private View mProgressView;
     private View mLoginFormView;
     private PlaceSerializable from, to;
-    private DatePicker dp;
-    private Calendar calendar;
-    private int year;
-    private int month;
-    private int day;
-    private int hour;
-    private int min;
+    private String token;
+    boolean isDriver = true;
+    private Button post_find_button;
 
 
     @Override
@@ -95,6 +96,7 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         setContentView(R.layout.activity_post);
         from = (PlaceSerializable) getIntent().getSerializableExtra("from");
         to = (PlaceSerializable) getIntent().getSerializableExtra("to");
+        post_find_button = findViewById(R.id.email_sign_in_button);
 
         // Set up the login form.
         fromView = (AutoCompleteTextView) findViewById(R.id.from);
@@ -105,13 +107,14 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         toView.setText(to.getAddress());
         toView.setEnabled(false);
         //     dp_init();
+        token = getIntent().getExtras().getString("token");
 
 
         toView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                    attemptPost();
                     return true;
                 }
                 return false;
@@ -122,12 +125,24 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                if (isDriver)
+                    attemptPost();
+                else
+                    attemptFind();
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+
+        seat = findViewById(R.id.seat_num);
+        date = findViewById(R.id.date_edittext);
+        time = findViewById(R.id.time_edittext);
+        time_waiting = findViewById(R.id.time_timewaiting);
+        time_sharing = findViewById(R.id.time_sharing);
+        time_sharing.setHint("driver_time_constraint_in_minute");
+
 
         ((EditText) findViewById(R.id.seat_num)).addTextChangedListener(new TextWatcher() {
             @Override
@@ -147,6 +162,26 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
             public void afterTextChanged(Editable s) {
             }
         });
+
+        ((ToggleButton)findViewById(R.id.toggleButton)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Log.i("post", "switch to passenger");
+                    time_sharing.setVisibility(View.INVISIBLE);
+                    time_sharing.setHint("");
+                    isDriver = false;
+                    post_find_button.setText("Find");
+                } else {
+                    Log.i("post", "switch to driver");
+                    time_sharing.setVisibility(View.VISIBLE);
+                    time_sharing.setHint("driver_time_constraint_in_minute");
+                    post_find_button.setText("Post");
+                    isDriver = true;
+                }
+            }
+        });
+
     }
 
 
@@ -169,47 +204,171 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         dialog.show();
     }
 
+    private boolean checkInput() {
+        boolean isLegal = true;
+        if (date.getText().toString().equals("")) {
+            date.setError("please enter the date of departure");
+            isLegal = false;
+        }
+
+        if (time.getText().toString().equals("")) {
+            time.setError("please enter the time of departure");
+            isLegal = false;
+        }
+
+        if (seat.getText().toString().equals("")) {
+            seat.setError("please enter the seats available for sharing");
+            isLegal = false;
+        }
+
+        if (time_waiting.getText().toString().equals("")) {
+            time_waiting.setError("please enter the flexibility of the time of your departure");
+            isLegal = false;
+        }
+
+        if (isDriver && time_sharing.getText().toString().equals("")) {
+            time_sharing.setError("please enter the extra time you are willing to use for your trip");
+            isLegal = false;
+        }
+
+
+        return isLegal;
+
+    }
+
+
+
 
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
+    private void attemptPost() {
+
+
+        //if all inputs are legal
+        if (checkInput()) {
+            Log.i("post", "Start auth");
+            HashMap data = new HashMap();
+            data.put("origin_lon",from.getLongitude());
+            data.put("origin_lat",from.getLatitude());
+            data.put("destination_lon",to.getLongitude());
+            data.put("destination_lat",to.getLatitude());
+            Log.i("post","origin_lon:" + from.getLongitude());
+            Log.i("post","origin_lat:" + from.getLatitude());
+            Log.i("post","destination_lon:" + to.getLongitude());
+            Log.i("post","destination_lat:" + to.getLatitude());
+
+            data.put("car_capacity",seat.getText().toString());
+            data.put("scheduled_departure_datetime",date.getText().toString() + "T" + time.getText().toString() + ":00Z");
+            Log.i("post","scheduled_departure_datetime:" + date.getText().toString() + "T" + time.getText().toString() + ":00Z");
+            data.put("scheduled_departure_time_range_in_minute",time_waiting.getText().toString());
+            data.put("driver_time_constraint_in_minute",time_sharing.getText().toString());
+
+
+            String url = "https://api.extrasmisc.com/driver/";
+
+            RequestQueue requestQueue = Volley.newRequestQueue(postActivity.this);
+
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(data), new com.android.volley.Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.i("post", "success");
+                    Log.i("post", response.toString());
+                    Toast.makeText(postActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+                    finish();
+                    //  Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
+                    //    intent.putExtra("token",response.getString("token"));
+                    // startActivity(intent);
+                }
+
+            }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("post", new String(error.networkResponse.data));
+                    Toast toast = Toast.makeText(postActivity.this, "Unable to post", Toast.LENGTH_SHORT);
+                    toast.show();
+
+                }
+            }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("Content-Type", "application/json");
+                    params.put("Authorization", "JWT " + token);
+                    return params;
+                }
+            };
+
+            requestQueue.add(jsonObjectRequest);
+
         }
+    }
 
-        // Reset errors.
-        fromView.setError(null);
-        toView.setError(null);
+    private void attemptFind() {
 
-        // Store values at the time of the login attempt.
-        String email = fromView.getText().toString();
-        String password = toView.getText().toString();
 
-        boolean cancel = false;
-        View focusView = null;
+        //if all inputs are legal
+        if (checkInput()) {
+            Log.i("post", "Start auth");
+            String url = "https://api.extrasmisc.com/driver/";
+            RequestQueue requestQueue = Volley.newRequestQueue(postActivity.this);
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, new JSONObject(), new com.android.volley.Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.i("post", "success");
+                    Log.i("post", response.toString());
+                    try {
+                        Log.i("post",response.getString("origin_lon"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-        // Check for a valid password, if the user entered one.
+                    Toast.makeText(postActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+                   // finish();
+                    //  Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
+                    //    intent.putExtra("token",response.getString("token"));
+                    // startActivity(intent);
+                }
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            fromView.setError(getString(R.string.error_field_required));
-            focusView = fromView;
-            cancel = true;
-        }
+            }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("post", error.getMessage());
+                    String response = error.getMessage();
+                    String[] jsonString = response.split("\\},");
+                    JsonParser parser = new JsonParser();
+                    ArrayList<JsonObject> jsonObjects = new ArrayList();
+                    for (String s: jsonString) {
+                        s = s + "}";
+                        JsonObject o = parser.parse(s).getAsJsonObject();
+                        jsonObjects.add(o);
+                        Log.i("post","json: " + s);
+                    }
 
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+                    for (JsonObject jo: jsonObjects) {
+                        Log.i("post","id " + jo.get("id").getAsString());
+                    }
+
+
+
+                    Toast toast = Toast.makeText(postActivity.this, "Unable to find", Toast.LENGTH_SHORT);
+                    toast.show();
+
+                }
+            }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("Content-Type", "application/json");
+                    params.put("Authorization", "JWT " + token);
+                    return params;
+                }
+            };
+
+            requestQueue.add(jsonObjectRequest);
+
         }
     }
 
@@ -316,22 +475,22 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        EditText time = (EditText) findViewById(R.id.date_edittext);
         String monthFormatted,dateFormatted;
-
-        if (month < 10) {
-            monthFormatted = "0" + month + 1;
+        Log.i("post","year:" + year + " month:" + month + " dayOfMonth:" + dayOfMonth);
+        if (month < 9) {
+            monthFormatted = "0" + (month + 1);
         } else {
             monthFormatted = String.valueOf(month + 1);
         }
 
         if (dayOfMonth < 10) {
-            dateFormatted = "0" + month + 1;
+            dateFormatted = "0" + dayOfMonth;
         } else {
-            dateFormatted = String.valueOf(month + 1);
+            dateFormatted = String.valueOf(dayOfMonth);
         }
 
-        time.setText("" + year + "-" + monthFormatted + "-" + dateFormatted);
+        Log.i("post","date set as: " + "" + year + "-" + monthFormatted + "-" + dateFormatted);
+        date.setText(Integer.toString(year) + "-" + monthFormatted + "-" + dateFormatted);
     }
 
     @Override

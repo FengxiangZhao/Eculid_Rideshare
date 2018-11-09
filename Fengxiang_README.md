@@ -2,6 +2,33 @@
 
 
 
+
+
+#### Week 7
+
+11/08/2018
+
+##### Goals
+
+Minimum Deliverable Product finished
+
+##### What I have done
+
+- Started the integration with server
+- Now the Client is able to Login/Register/Post/Find Trips
+- Client is able to edit their account info in client
+- Many small improvement for user experience
+
+##### Todo 
+
+- Keep working on communicate with server.
+- Complete the matching algorithm with Yida
+- Start some testing
+
+
+
+
+
 #### Week 6
 
 11/02/2018

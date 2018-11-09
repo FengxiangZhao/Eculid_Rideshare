@@ -3,7 +3,6 @@ package com.example.b.rideshare;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -31,19 +30,22 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.common.api.Response;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -70,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
+    private AutoCompleteTextView mUsernameView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
@@ -80,7 +82,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mUsernameView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -94,14 +96,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 return false;
             }
         });
-
+/*
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
             }
-        });
+        });*/
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -123,7 +125,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return true;
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(mUsernameView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)
@@ -162,11 +164,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         // Reset errors.
-        mEmailView.setError(null);
+        mUsernameView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
+        String email = mUsernameView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
@@ -181,12 +183,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
+            mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = mUsernameView;
             cancel = true;
         } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
+            mUsernameView.setError(getString(R.string.error_invalid_email));
+            focusView = mUsernameView;
             cancel = true;
         }
 
@@ -289,7 +291,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 new ArrayAdapter<>(LoginActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-        mEmailView.setAdapter(adapter);
+        mUsernameView.setAdapter(adapter);
     }
 
 
@@ -304,9 +306,113 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     public void tester(View v) {
-                Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 startActivity(intent);
 
+    }
+
+
+
+    public void loginTest(View v) {
+        Log.i("login","Start auth");
+        HashMap data = new HashMap();
+        data.put("username","test2");
+        data.put("password","qwer1234");
+       // data.put("username",mUsernameView.getText().toString());
+      //  data.put("password",mPasswordView.getText().toString());
+
+        String url ="https://api.extrasmisc.com/token/authorize/";
+        showProgress(true);
+
+
+        RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(data), new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("login","success");
+                showProgress(false);
+
+                try {
+                    Log.i("login",response.getString("token"));
+
+                    Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
+                    intent.putExtra("token",response.getString("token"));
+                    startActivity(intent);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                showProgress(false);
+
+                Log.i("login","failed");
+                Toast toast = Toast.makeText(LoginActivity.this, "Unable to log in with provided credentials.", Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        });
+
+        requestQueue.add(jsonObjectRequest);
+
+        Log.i("login","goes here");
+
+    }
+
+
+    public void authTest(View v) {
+        Log.i("login","Start auth");
+        HashMap data = new HashMap();
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InRlc3QxIiwiZXhwIjoxNTQxNjU2MTE3LCJlbWFpbCI6ImFiYzEyM0BjYXNlLmVkdSJ9.dWWWuWOCxjju614Vn4UkCEs_5pKt0iR1pi6C7GHfWLA";
+       // data.put("Content-Type","application/json");
+        //data.put("Authorization","JWT " + token);
+
+        String url ="https://api.extrasmisc.com/account/";
+
+        RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, new JSONObject(data), new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("login","success");
+                    Log.i("login",response.toString());
+                  //  Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
+                //    intent.putExtra("token",response.getString("token"));
+                   // startActivity(intent);
+            }
+
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("login",error.networkResponse.headers.toString());
+                Toast toast = Toast.makeText(LoginActivity.this, "Unable to log in with provided credentials.", Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  params = new HashMap<String, String>();
+                String token2 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InRlc3QxIiwiZXhwIjoxNTQxNjU2NzYyLCJlbWFpbCI6ImFiYzEyM0BjYXNlLmVkdSJ9.pbQ40Su1gArJTbfUVpPbJoZcx_C-uMQiQuJrfdZN21I";
+                params.put("Content-Type","application/json");
+                params.put("Authorization","JWT " + token2);
+                return params;
+            }
+        };
+
+        requestQueue.add(jsonObjectRequest);
+
+        Log.i("login","goes here");
+
+    }
+
+    public void resultTest(View v) {
+        Intent intent = new Intent(LoginActivity.this, ResultActivity.class);
+        startActivity(intent);
     }
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -316,6 +422,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         private final String mEmail;
         private final String mPassword;
+        private boolean success = false;
+
+
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -325,68 +434,42 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            String url ="https://api.extramisc.com/api";
-            JSONObject request = new JSONObject();
-            try {
-                request.put("Username","politica");
-                request.put("Password","qwer1234");
-            } catch (JSONException e) {
-                Log.e("login",e.getMessage());
-            }
+
+            final boolean success = false;
 
 
+            Log.i("login","Start auth");
+            HashMap data = new HashMap();
+            data.put("username","politica");
+            data.put("password","qwer1234");
 
-// Request a string response from the provided URL.
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(com.android.volley.Request.Method.POST,url,request,new Response.Listener()) {
-                {
-                    @Override
-                    public void onResponse(JSONObject response){
-                    pDialog.hide();
+            String url ="https://api.extrasmisc.com/token/authorize/";
 
-                    Log.d("Reponse", response.toString());
+            RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
 
-                    Toast.makeText(getApplicationContext(), response.optString("name"), Toast.LENGTH_LONG).show();
-                }
-
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        volleyError.printStackTrace();
-
-                        Log.d("Error = ", volleyError.toString());
-
-                        pDialog.hide();
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(data), new com.android.volley.Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Log.i("login","success");
+                    try {
+                        Log.i("login",response.getString("token"));
+                        
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                }){
-                    @Override
-                    protected Map<String, String> getParams(){
-                        return params;
-                    };
                 }
-            };
+            }, new com.android.volley.Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("login","failed");
 
-// Add the request to the RequestQueue. queue.add(jsonObjectRequest);
-            Log.i("login","Response is: "+ response.substring(0,500));
-
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
                 }
-            }
+            });
 
-            // TODO: register the new account here.
+
+
             return true;
+
         }
 
         @Override
@@ -402,11 +485,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         }
 
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
+
+        public boolean getSuccess() {
+            return success;
+        }
+
+
     }
 }
 

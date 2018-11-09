@@ -46,6 +46,7 @@ public class MapsActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     private boolean mPermissionDenied = false;
     private View mMapView;
+    private String token;
 
 
 
@@ -64,11 +65,11 @@ public class MapsActivity extends AppCompatActivity implements
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
+
+
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(place.getLatLng());
                 markerOptions.title(place.getLatLng().latitude + " : " + place.getLatLng().longitude);

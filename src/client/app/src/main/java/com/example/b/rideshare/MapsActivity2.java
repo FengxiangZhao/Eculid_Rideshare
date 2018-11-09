@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -32,6 +33,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.Serializable;
@@ -39,7 +41,7 @@ import java.io.Serializable;
 
 public class MapsActivity2 extends AppCompatActivity implements
         OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener,ActivityCompat.OnRequestPermissionsResultCallback {
+        GoogleMap.OnMyLocationClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private GoogleMap mMap;
     private boolean mPermissionDenied = false;
@@ -47,10 +49,9 @@ public class MapsActivity2 extends AppCompatActivity implements
     private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
     private boolean fromEntered = false;
     private boolean toEntered = false;
-    private Place from,to;
-
-
-
+    private Place from, to;
+    private String token;
+    private LocationManager locationManager;
 
 
     @Override
@@ -65,6 +66,10 @@ public class MapsActivity2 extends AppCompatActivity implements
 
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        token = getIntent().getExtras().getString("token");
+
+        Log.i("token", token);
+
 
         /*autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -112,6 +117,7 @@ public class MapsActivity2 extends AppCompatActivity implements
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
         enableMyLocation();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.506491, -81.606372), 12)); //Location of CWRU
 
     }
 
@@ -131,7 +137,8 @@ public class MapsActivity2 extends AppCompatActivity implements
             RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
 // position on right bottom
             rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-            rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);rlp.setMargins(0,0,30,110);
+            rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            rlp.setMargins(0, 0, 30, 110);
 
 
         }
@@ -143,6 +150,18 @@ public class MapsActivity2 extends AppCompatActivity implements
     @Override
     public boolean onMyLocationButtonClick() {
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
+        locationManager = (LocationManager) getSystemService(MapsActivity2.LOCATION_SERVICE);
+     //   if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            Log.i("maps","currentLoc: " + myLocation.getLatitude() + ";" + myLocation.getLongitude());
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+    //    }
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
         return false;
@@ -199,9 +218,16 @@ public class MapsActivity2 extends AppCompatActivity implements
         switch (item.getItemId()) {
             case R.id.id_my_trips:
                 //to be implemented
-                Toast.makeText(MapsActivity2.this, "My Trips Clicked",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapsActivity2.this, "My Trips Clicked", Toast.LENGTH_SHORT).show();
+                break;
             case R.id.id_about:
                 showNormalDialog();
+                break;
+            case R.id.id_my_profiles:
+                Intent intent = new Intent(MapsActivity2.this, ProfileActivity.class);
+                intent.putExtra("token", token);
+                startActivity(intent);
+                break;
             default:
                 break;
 
@@ -231,12 +257,18 @@ public class MapsActivity2 extends AppCompatActivity implements
             if (resultCode == RESULT_OK) {
                 TextView tv;
                 Place place = PlaceAutocomplete.getPlace(this, data);
-                if (requestCode == 1) {
+                if (requestCode == 1) { //if it is pickup
                     Log.i("autocomplete", "pickup recieved ");
                     tv = (TextView) findViewById(R.id.pickup);
                     toEntered = true;
                     from = place;
-                } else {
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(place.getLatLng());
+                    markerOptions.title(place.getLatLng().latitude + " : " + place.getLatLng().longitude);
+                    mMap.clear();
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(),15.0f));
+                    mMap.addMarker(markerOptions);
+                } else { //if it is dropoff
                     Log.i("autocomplete", "dropoff recieved ");
                     tv = (TextView) findViewById(R.id.drop);
                     fromEntered = true;
@@ -317,7 +349,7 @@ public class MapsActivity2 extends AppCompatActivity implements
         Intent intent = new Intent(MapsActivity2.this, postActivity.class);
         intent.putExtra("from",new PlaceSerializable(from));
         intent.putExtra("to",new PlaceSerializable(to));
-
+        intent.putExtra("token",token);
         startActivityForResult(intent, 1);
 
     }

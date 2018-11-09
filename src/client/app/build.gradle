@@ -33,4 +33,5 @@ dependencies {
     implementation 'com.google.android.gms:play-services:11.4.0'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.mcxiaoke.volley:library:1.0.19'
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
