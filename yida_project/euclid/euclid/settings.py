@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     # non django
     'rest_framework',
     'rest_framework_jwt',
+    # 3rd party
+    'fcm_django',
     # local modules
     'euclid_schedule',
     'euclid_verification',
@@ -168,3 +170,15 @@ DEFAULT_FROM_EMAIL = EUCLID_CARSHARE_MAIL_ADDRESS
 HOSTING_URL = '127.0.0.1'
 ALLOWED_HOSTS += [HOSTING_URL]
 
+if DEBUG:
+    ALLOWED_HOSTS += ['testserver']
+
+EUCLID_SCHEDULE_SETTINGS = {
+    "GOOGLE_MAPS_API_KEY" : 'AIzaSyB5xFv9a9IdFjw4DWTRl4gkqHar-uBVqBA',
+}
+
+
+# celery
+CELERY_BEAT_SCHEDULE = {
+
+}

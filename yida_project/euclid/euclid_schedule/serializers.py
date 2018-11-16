@@ -4,38 +4,34 @@ from django.conf import settings
 from rest_framework import serializers
 # local
 from .models import DriverSchedule, RiderSchedule
-from euclid_authorization.serializers import ClientSerializer
+from euclid_userauth.serializers import ClientSerializer
 
-class RiderScheduleSerializer(serializers.ModelSerializer):
 
+class BaseScheduleSerializer(serializers.ModelSerializer):
     owner = ClientSerializer(required=False, read_only=True)
-    matching_driver = ClientSerializer(required=False, read_only=True)
 
     class Meta:
-        model = RiderSchedule
-        fields = ('id',
-                  'origin_lon', 'origin_lat', 'destination_lon', 'destination_lat',
-                  'scheduled_departure_datetime',
-                  'scheduled_departure_time_range_in_minute',
-                  'matching_driver', 'owner')
+        fields = '__all__'
 
-        read_only_fields = ('matching_driver',)
-        depth = 2
 
 class DriverScheduleSerializer(serializers.ModelSerializer):
-
-    owner = ClientSerializer(required=False, read_only=True)
-    matched_rider = ClientSerializer(many=True, required=False, read_only=True)
-
-
-    class Meta:
+    class Meta(BaseScheduleSerializer.Meta):
         model = DriverSchedule
-        fields = ('id',
-                  'origin_lon', 'origin_lat', 'destination_lon', 'destination_lat',
-                  'car_capacity',
-                  'scheduled_departure_datetime',
-                  'scheduled_departure_time_range_in_minute',
-                  'driver_time_constraint_in_minute',
-                  'owner', 'matched_rider',)
-        depth = 2
+        read_only_fields = ("remaining_car_capacity",)
+
+    def create(self, validated_data):
+        validated_data["remaining_car_capacity"] = validated_data["car_capacity"]
+        return super(DriverScheduleSerializer, self).create(validated_data)
+
+
+class RiderScheduleSerializer(serializers.ModelSerializer):
+    matching_driver = DriverScheduleSerializer(required=False, read_only=True)
+
+    class Meta(BaseScheduleSerializer.Meta):
+        model = RiderSchedule
+        read_only_fields = ('matching_driver',)
+
+    def create(self, validated_data):
+        validated_data["remaining_car_capacity"] = validated_data["car_capacity"]
+        return super(RiderScheduleSerializer, self).create(validated_data)
 

@@ -126,7 +126,8 @@ class EmailVerificationToken(AbstractBaseToken):
             "url": settings.HOSTING_URL,
             "token": self.token
         }
-        send_html_email_with_template("api", "verification", context, getattr(self.client, getattr(settings, 'AUTH_USER_MODEL_EMAIL_FIELD', 'email')))
+        from .tasks import send_email_with_template_task
+        send_email_with_template_task.delay("api", "verification", context, getattr(self.client, getattr(settings, 'AUTH_USER_MODEL_EMAIL_FIELD', 'email')))
 
     @property
     def is_verified(self):

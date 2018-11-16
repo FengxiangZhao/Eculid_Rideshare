@@ -76,3 +76,12 @@ class ClientPasswordChangeSerializer(serializers.Serializer):
         pass
 
 
+
+from fcm_django.models import FCMDevice
+from fcm_django.api.rest_framework import UniqueRegistrationSerializerMixin, DeviceSerializerMixin
+
+
+class FCMDeviceSerializer(serializers.ModelSerializer, UniqueRegistrationSerializerMixin):
+    class Meta(DeviceSerializerMixin.Meta):
+        model = FCMDevice
+        extra_kwargs = {"id": {"read_only": True}}

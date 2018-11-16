@@ -15,6 +15,7 @@ def api_root(request, format=None):
         'Client Password Change' : reverse('client-password-change', request=request, format=format),
         'Client Token Authorization' : reverse('token-auth', request=request, format=format),
         'Client Token Refresh' : reverse('token-refresh', request=request, format=format),
+        'Client Device Add': reverse('client-device-add', request=request, format=format),
         'Driver Schedule': reverse('driver-schedule-list', request=request, format=format),
         'Rider Schedule' : reverse('rider-schedule-list', request=request, format=format)
     })

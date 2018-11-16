@@ -60,3 +60,17 @@ class ClientPasswordChange(generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# FCM
+from fcm_django.models import FCMDevice
+from .serializers import FCMDeviceSerializer
+
+class FCMDeviceCreate(generics.CreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = FCMDeviceSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+        if self.request.data.get('active', True):
+            FCMDevice.objects.filter(user=self.request.user).update(active=False)
+
