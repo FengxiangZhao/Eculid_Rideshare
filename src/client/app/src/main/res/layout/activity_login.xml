@@ -93,6 +93,14 @@
                 android:onClick="resultTest"
                 android:text="resultTest" />
 
+            <Button
+                android:id="@+id/button7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="notificationTest"
+                android:text="Notification" />
+
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

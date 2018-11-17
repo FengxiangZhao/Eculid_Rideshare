@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "148862763684",
+    "firebase_url": "https://mappa-main.firebaseio.com",
+    "project_id": "mappa-main",
+    "storage_bucket": "mappa-main.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148862763684:android:2f3ab4157cb66f7d",
+        "android_client_info": {
+          "package_name": "com.example.b.rideshare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "148862763684-430oi90olcjnothluffs3kia3a28bs6f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.b.rideshare",
+            "certificate_hash": "c443db1a2dec577279af1bd357aca2e78954dfda"
+          }
+        },
+        {
+          "client_id": "148862763684-9jhedml9ntrv4ufh9hnc360o8rvmr2vp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3b1VWcXq7W7sULhB0tKN2kl5JGGmQaPE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "148862763684-9jhedml9ntrv4ufh9hnc360o8rvmr2vp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

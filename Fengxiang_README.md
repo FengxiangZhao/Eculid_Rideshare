@@ -2,6 +2,29 @@
 
 
 
+#### Week 8
+
+11/08/2018
+
+##### Goals
+
+Keep on communicate with server
+
+Continued on matching algorithm with Yida
+
+##### What I have done
+
+- Now Client is able to process Json object from the server and show it 
+- Using `FireBase` service to test push notification (some glitches exist)
+- Discussed matching algorithm with Yida, but we find that it is more complex than we expected. 
+- Many small improvement for user experience
+
+##### Todo 
+
+Finish the Matching algorithm and push notification. 
+
+
+
 
 
 #### Week 7
