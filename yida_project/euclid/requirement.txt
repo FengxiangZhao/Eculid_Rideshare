@@ -1,6 +1,7 @@
 django >= 2.1
 djangorestframework >= 3.5
-djangorestframework-jwt==1.11.0
+djangorestframework-jwt
 gunicorn
 fcm-django==0.2.19
 celery==4.2.0
+googlemaps

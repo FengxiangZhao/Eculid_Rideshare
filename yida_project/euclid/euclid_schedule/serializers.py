@@ -19,10 +19,6 @@ class DriverScheduleSerializer(serializers.ModelSerializer):
         model = DriverSchedule
         read_only_fields = ("remaining_car_capacity",)
 
-    def create(self, validated_data):
-        validated_data["remaining_car_capacity"] = validated_data["car_capacity"]
-        return super(DriverScheduleSerializer, self).create(validated_data)
-
 
 class RiderScheduleSerializer(serializers.ModelSerializer):
     matching_driver = DriverScheduleSerializer(required=False, read_only=True)
@@ -31,7 +27,6 @@ class RiderScheduleSerializer(serializers.ModelSerializer):
         model = RiderSchedule
         read_only_fields = ('matching_driver',)
 
-    def create(self, validated_data):
-        validated_data["remaining_car_capacity"] = validated_data["car_capacity"]
-        return super(RiderScheduleSerializer, self).create(validated_data)
+
+
 

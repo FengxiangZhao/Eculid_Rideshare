@@ -55,6 +55,8 @@ class BaseSchedule(models.Model):
         return NotImplementedError("Base schedule does not offer functionalities of notifying user")
 
 
+
+
 class DriverSchedule(BaseSchedule):
     '''
     A database model that represents the driver's schedule, extends AbstractSchedule
@@ -63,7 +65,6 @@ class DriverSchedule(BaseSchedule):
         owner: A foreign key points to the driver who created this schedule
     '''
     car_capacity = models.PositiveSmallIntegerField(_("Car capacity of the driver."))
-    remaining_car_capacity = models.PositiveIntegerField(_("Remaining car capacity of the driver."))
     driver_time_constraint_in_minute = models.PositiveSmallIntegerField()
 
     @property
@@ -73,6 +74,9 @@ class DriverSchedule(BaseSchedule):
     @property
     def has_match(self):
         return RiderSchedule.objects.filter(matching_driver=self).exists()
+
+
+
 
 class RiderSchedule(BaseSchedule):
     '''
