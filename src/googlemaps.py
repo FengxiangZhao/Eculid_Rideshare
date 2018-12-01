@@ -7,26 +7,24 @@ Original file is located at
     https://colab.research.google.com/drive/1CFgzXw3IVktGr7TSIYQnjDDdujeG_vqm
 """
 
-!pip install googlemaps
 import googlemaps
 GOOGLE_MAPS_API_KEY = 'AIzaSyB5xFv9a9IdFjw4DWTRl4gkqHar-uBVqBA'
 g = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
 class Schedule:
-  def __init__(self, origLat,origLont,destLat,destLont,startTime,endTime,timeCons,timeSpare):
+  def __init__(self, origLat,origLont,destLat,destLont,startTime,timeCons,index):
     self.origLat = origLat
     self.origLont = origLont
     self.destLat = destLat
     self.destLont = destLont
     self.startTime = startTime
-    self.endTime = endTime
     self.timeCons = timeCons
-    self.timeSpare = timeSpare
+    self.index = index
 
-d = Schedule(41.50542,-81.60914,41.437125,-81.63289,0,60,20,20)
-r1 = Schedule(41.457125, -81.64129,41.487155,-81.55115,20,60,50,0)
-r2 = Schedule(41.427125, -81.75129,41.547155,-81.66115,20,60,50,0)
+d = Schedule(41.50542,-81.60914,41.437125,-81.60289,0,6000,0)
+r1 = Schedule(41.457125, -81.64129,41.487155,-81.55115,300,2400,1)
+r2 = Schedule(41.427125, -81.75129,41.547155,-81.66115,600,2400,2)
 
-pointList = [d,r1,r2]
+riderList = [r1,r2]
 origList = []
 destList = []
 
@@ -42,22 +40,90 @@ lst = origList + destList
 result = g.distance_matrix(origins = lst, destinations = lst, mode="driving")
 
 varList = [] # stores the route and use to reference in future
+pointList = []
 durationList = []
+
 for i,row in enumerate(result['rows']):
- for j,detail in enumerate(row['elements']):
+  pointList.append(str(i))
+  for j,detail in enumerate(row['elements']):
     varList.append(str(i) + str(j))
     durationList.append(detail['duration']['value'])
 
+routeDict = dict(zip(varList,durationList))
+
+
+
 class Route:
   def __init__(self, var, duration):
-    self.var = duration
-    self.var = duration
+    self.var = var
+    self.duration = duration
 
 import itertools
+riderOriginList = pointList[1:int(len(pointList)/2)]
+riderDestList = pointList[(int(len(pointList)/2)):int(len(pointList))-1]
 
-routeItr = list(itertools.permutations(varList[1:-1]))
+pointList[1:(int(len(pointList)/2))] + pointList[(int(len(pointList)/2))+1:(len(pointList))]
 
-routeItr[0]
+routeItr = list(itertools.permutations(pointList[1:(int(len(pointList)/2))] + pointList[(int(len(pointList)/2))+1:(len(pointList))]))
+
+routes = routeItr[0:int(len(routeItr)/2)]
+
+strList = []
+for route in routes:
+  routeStr = "0"
+  for p in route:
+    routeStr = routeStr + p
+  routeStr = routeStr + str(int(len(pointList)/2))
+  legal = True
+  for i in range(1,int(len(pointList)/2)):
+    if routeStr.find(str(i+3)) < routeStr.find(str(i)):
+      legal = False
+  if legal:
+    strList.append(routeStr)
+
+strList
+
+routeItrList = []
+for route in strList:
+  tempRouteList = []
+  for index,char in enumerate(route):
+    if index != len(route) - 1:
+      tempRouteList.append(routeDict[char+route[index+1]])
+    else:
+      tempRouteList.append(0)
+  routeItrList.append(tempRouteList)
+
+allRouteDict = dict(zip(strList,routeItrList))
 
 
+def driverFlex(durationList, originalTime,timeConstrain):
+  timeSum = 0
+  for duration in durationList:
+    timeSum += duration
+  print('The original time of driver is ' + str(originalTime) + ' and new time is ' + str(timeSum))
+  return (timeSum - originalTime < timeConstrain)
+
+sortedList = sorted(allRouteDict, key=lambda k: sum(allRouteDict[k]))
+
+def RiderFlex(route,durationList,riderList):
+  legal = True
+  for rider in riderList:
+    print(' rider: ' + str(rider.index) + ' will be picked at '  + str(sum(durationList[0:route.find(str(rider.index))])) + ', who has time constrains of ' + str(rider.startTime) + '±' + str(rider.timeCons))
+    if (sum(durationList[0:route.find(str(rider.index))]) < rider.startTime - rider.timeCons) or  (sum(durationList[0:route.find(str(rider.index))]) > rider.startTime + rider.timeCons):
+      legal = False
+  return legal
+
+
+for route in sortedList:
+  legal = True
+  print('for route ' + route)
+  if not driverFlex(allRouteDict[route],routeDict['03'],d.timeCons):
+    legal = False
+    print('Driver illegal')
+  if not RiderFlex(route,allRouteDict[route],riderList):
+    legal = False
+    print('Rider illegal')
+
+  if legal:
+    print(route + ' is viable')
 
