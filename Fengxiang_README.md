@@ -2,9 +2,31 @@
 
 
 
+#### Week 9
+
+11/30/2018
+
+##### Goals
+
+Word on matching algorithm with Yida
+
+Start some testing 
+
+##### What I have done
+
+- Some changes to Client
+- Tested my client with many people
+- Worked on matching algorithm with Yida
+
+##### Todo 
+
+Finish all development
+
+
+
 #### Week 8
 
-11/08/2018
+11/16/2018
 
 ##### Goals
 

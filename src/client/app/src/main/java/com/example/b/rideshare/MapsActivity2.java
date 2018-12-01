@@ -331,6 +331,16 @@ public class MapsActivity2 extends AppCompatActivity implements
     }
 
 
+    public void goNext(View v) {
+        Button b = (Button)findViewById(R.id.next);
+        Intent intent = new Intent(MapsActivity2.this, postActivity.class);
+        intent.putExtra("from",new PlaceSerializable(from));
+        intent.putExtra("to",new PlaceSerializable(to));
+        intent.putExtra("token",token);
+        startActivityForResult(intent, 1);
+
+    }
+
     private void enableNextButton() {
         if (toEntered && fromEntered) {
             Button nextButton = (Button)findViewById(R.id.next);
@@ -342,16 +352,6 @@ public class MapsActivity2 extends AppCompatActivity implements
 
     public void showCost() {
         //TODO: SHOW COST/ETA
-    }
-
-    public void goNext(View v) {
-        Button b = (Button)findViewById(R.id.next);
-        Intent intent = new Intent(MapsActivity2.this, postActivity.class);
-        intent.putExtra("from",new PlaceSerializable(from));
-        intent.putExtra("to",new PlaceSerializable(to));
-        intent.putExtra("token",token);
-        startActivityForResult(intent, 1);
-
     }
 
 

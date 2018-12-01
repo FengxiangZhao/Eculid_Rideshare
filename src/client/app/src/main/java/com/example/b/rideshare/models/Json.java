@@ -142,7 +142,7 @@ public final class Json {
         return handler.getValue();
     }
 
-  
+
     public static JsonValue parse(Reader reader) throws IOException {
         if (reader == null) {
             throw new NullPointerException("reader is null");

@@ -185,25 +185,6 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
     }
 
 
-    public void changeTime(View v) {
-        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        Date date = new Date();
-        //set theme as 3 as the THEME_HOLO_LIGHT
-        TimePickerDialog dialog = new TimePickerDialog(postActivity.this, 3, this, date.getHours(), date.getMinutes(), true);
-        dialog.show();
-    }
-
-    public void changeDate(View v) {
-        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        Date date = new Date();
-        DatePickerDialog dialog = new DatePickerDialog(postActivity.this, this, date.getYear(), date.getMonth(), date.getDate());
-        //disable past date
-        dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
-        dialog.show();
-    }
-
     private boolean checkInput() {
         boolean isLegal = true;
         if (date.getText().toString().equals("")) {
@@ -235,8 +216,6 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         return isLegal;
 
     }
-
-
 
 
     /**
@@ -409,22 +388,6 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         }
     }
 
-    public void selectNumSeats(View v) {
-       /* String[] choices = {"1","2","3","4","5","6","7"};
-        final Dialog d = new Dialog(postActivity.this);
-        d.setTitle("Choose Number of Seats you can provide");
-        d.setContentView(R.layout.number_picker);
-        final NumberPicker np = (NumberPicker) d.findViewById(R.id.dialog_number_picker);
-        np.setMaxValue(7);
-        np.setMinValue(1);
-        np.setWrapSelectorWheel(false);
-        np.setOnValueChangedListener(this);
-        d.show();*/
-
-        Log.i("postActivity", "selectNumSeatscalled");
-    }
-
-
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
 //        ((EditText)findViewById(R.id.seat_num)).setText(newVal);
@@ -471,6 +434,25 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         fromView.setAdapter(adapter);
+    }
+
+    public void changeDate(View v) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        Date date = new Date();
+        DatePickerDialog dialog = new DatePickerDialog(postActivity.this, this, date.getYear(), date.getMonth(), date.getDate());
+        //disable past date
+        dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+        dialog.show();
+    }
+
+    public void changeTime(View v) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        Date date = new Date();
+        //set theme as 3 as the THEME_HOLO_LIGHT
+        TimePickerDialog dialog = new TimePickerDialog(postActivity.this, 3, this, date.getHours(), date.getMinutes(), true);
+        dialog.show();
     }
 
     @Override
