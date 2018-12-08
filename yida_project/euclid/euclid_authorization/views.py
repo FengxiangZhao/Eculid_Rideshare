@@ -5,11 +5,10 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework import status
 # local
-from .permissions import IsAnonymousOrReadOnly
 from .models import Client
 from .serializers import ClientSerializer, ClientRegistrationSerializer, ClientPasswordChangeSerializer
+from .permissions import IsAnonymousOrReadOnly
 from euclid_verification.models import EmailVerificationToken
-
 
 class CurrentClient(generics.RetrieveUpdateAPIView):
     '''
@@ -29,15 +28,11 @@ class ClientRegistration(generics.CreateAPIView):
     def perform_create(self, serializer):
         # Assumption that the serializer.is_valid() has been ran before perfore_create
         user = Client.objects.create_user(
-            username=serializer.validated_data['username'],
-            email=serializer.validated_data['email'],
-            password=serializer.validated_data['password'],
-            phone=serializer.validated_data['phone'],
+            **serializer.validated_data
         )
         token = EmailVerificationToken.objects.create_email_verification_token(user, save=False)
         token.send_verification_email()
         token.save()
-
 
 class ClientPasswordChange(generics.GenericAPIView):
     """
@@ -59,8 +54,6 @@ class ClientPasswordChange(generics.GenericAPIView):
         update_session_auth_hash(request, self.object)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-# FCM
 from fcm_django.models import FCMDevice
 from .serializers import FCMDeviceSerializer
 
@@ -73,4 +66,5 @@ class FCMDeviceCreate(generics.CreateAPIView):
 
         if self.request.data.get('active', True):
             FCMDevice.objects.filter(user=self.request.user).update(active=False)
+
 

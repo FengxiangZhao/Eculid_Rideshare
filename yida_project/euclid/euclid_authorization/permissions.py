@@ -1,4 +1,3 @@
-# rest framework
 from rest_framework import permissions
 
 class IsAnonymousOrReadOnly(permissions.BasePermission):

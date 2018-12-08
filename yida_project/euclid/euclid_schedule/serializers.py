@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework import serializers
 # local
 from .models import DriverSchedule, RiderSchedule
-from euclid_userauth.serializers import ClientSerializer
+from euclid_authorization.serializers import ClientSerializer
 
 
 class BaseScheduleSerializer(serializers.ModelSerializer):
@@ -12,6 +12,7 @@ class BaseScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
+        exclude = ('latest_arrival_time', )
 
 
 class DriverScheduleSerializer(serializers.ModelSerializer):

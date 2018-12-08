@@ -1,5 +1,6 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from euclid_schedule import views
+
 
 urlpatterns = [
     url(r'^driver/$', views.DriverScheduleList.as_view(), name='driver-schedule-list'),

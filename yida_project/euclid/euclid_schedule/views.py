@@ -16,7 +16,9 @@ class DriverScheduleList(generics.ListCreateAPIView):
         return DriverSchedule.objects.all().filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(
+            owner=self.request.user,
+        )
 
 class DriverScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
     '''
@@ -32,7 +34,7 @@ class DriverScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
         '''
         User active perform cancel on a specific driver schedule
         '''
-        instance._cancel()
+        instance.cancel()
 
 class RiderScheduleList(generics.ListCreateAPIView):
     '''
@@ -45,7 +47,9 @@ class RiderScheduleList(generics.ListCreateAPIView):
         return RiderSchedule.objects.all().filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(
+            owner=self.request.user
+        )
 
 class RiderScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
     '''
@@ -61,4 +65,4 @@ class RiderScheduleDetail(generics.RetrieveUpdateDestroyAPIView):
         '''
         User actively perform cancel on a specific rider schedule
         '''
-        instance._cancel()
+        instance.cancel()

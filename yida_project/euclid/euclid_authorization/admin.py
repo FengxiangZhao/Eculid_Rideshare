@@ -1,12 +1,10 @@
-# django
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin
-# local
+
 from .models import Client
 from .verifications import validate_case_email
-
 
 class ClientCreationForm(forms.ModelForm):
     """
@@ -31,7 +29,9 @@ class ClientCreationForm(forms.ModelForm):
             raise forms.ValidationError("The email address provided is not a valid CWRU email address.")
         return email
 
+
 class ClientAdmin(UserAdmin):
+    # The forms to add and change user instances
     add_form = ClientCreationForm
 
     # The fields to be used in displaying the User model.
@@ -56,11 +56,11 @@ class ClientAdmin(UserAdmin):
     filter_horizontal = ()
 
     def get_readonly_fields(self, request, obj=None):
-        # return self.readonly_fields + ['email']
-        if obj:
-            return self.readonly_fields + ['email']
-        else:
-            return self.readonly_fields
+        readonly_fields = super(UserAdmin, self).get_readonly_fields(request, obj)
+        if obj: # editing an existing object
+            return readonly_fields + ['email']
+        return readonly_fields
+
 
 
 admin.site.register(Client, ClientAdmin)

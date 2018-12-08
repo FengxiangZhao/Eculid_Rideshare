@@ -1,0 +1,6 @@
+Hello {{ username }},
+
+{{ reason }}. {{ result }}.
+
+Thanks,
+Euclid Rideshare Team
