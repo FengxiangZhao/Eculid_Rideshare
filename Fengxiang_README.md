@@ -2,6 +2,25 @@
 
 
 
+#### Week 10
+
+12/07/2018
+
+##### Goals
+
+Finish and wrap everything
+
+##### What I have done
+
+ Finished the matching algorithm with Yida
+
+- Wrapped the client to apk file
+- Continue test my client with many people
+
+
+
+
+
 #### Week 9
 
 11/30/2018

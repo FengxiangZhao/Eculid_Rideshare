@@ -497,7 +497,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return success;
         }
 
-        public void notificationTest(View v) {
+      /*  public void notificationTest(View v) {
             // Get token
             FirebaseInstanceId.getInstance().getInstanceId()
                     .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
@@ -519,7 +519,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     });
 
 
-        }
+        }*/
 
 
     }
