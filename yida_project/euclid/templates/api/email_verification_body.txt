@@ -4,3 +4,4 @@ Verify your email with the following link:
 {{ url }}/email/verify/?token={{ token }}
 
 Thanks,
+Euclid Rideshare Team

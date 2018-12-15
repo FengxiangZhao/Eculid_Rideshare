@@ -182,3 +182,6 @@ EUCLID_SCHEDULE_SETTINGS = {
 CELERY_BEAT_SCHEDULE = {
 
 }
+
+if DEBUG:
+    ALLOWED_HOSTS += ['testserver']

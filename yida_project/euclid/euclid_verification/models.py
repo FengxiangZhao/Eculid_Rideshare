@@ -7,7 +7,10 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 # local
 from .exceptions import EmailVerificationTokenExpired, EmailVerificationTokenInvalid
-from .mail import send_html_email_with_template
+
+
+# Create your models here.
+
 
 def _get_verification_token():
     """
@@ -122,12 +125,13 @@ class EmailVerificationToken(AbstractBaseToken):
         Send an verification email
         '''
         context = {
-            'username' : getattr(self.client, getattr(settings, 'AUTH_USER_MODEL_USERNAME_FIELD', 'username')),
+            'username' : self.client.username,
             "url": settings.HOSTING_URL,
             "token": self.token
         }
-        from .tasks import send_email_with_template_task
-        send_email_with_template_task.delay("api", "verification", context, getattr(self.client, getattr(settings, 'AUTH_USER_MODEL_EMAIL_FIELD', 'email')))
+        # send_html_email_with_template("api", "verification", context, self.client.email)
+        from euclid_verification.tasks import send_email_with_template_task
+        send_email_with_template_task.delay("api", "verification", context, self.client.email)
 
     @property
     def is_verified(self):
