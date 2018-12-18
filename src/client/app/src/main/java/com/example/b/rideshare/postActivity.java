@@ -109,26 +109,11 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         //     dp_init();
         token = getIntent().getExtras().getString("token");
 
-
-        toView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptPost();
-                    return true;
-                }
-                return false;
-            }
-        });
-
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isDriver)
-                    attemptPost();
-                else
-                    attemptFind();
+                attemptPost(isDriver);
             }
         });
 
@@ -141,7 +126,7 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         time = findViewById(R.id.time_edittext);
         time_waiting = findViewById(R.id.time_timewaiting);
         time_sharing = findViewById(R.id.time_sharing);
-        time_sharing.setHint("driver_time_constraint_in_minute");
+        time_sharing.setHint("Minutes willing to exceed your original trip time");
 
 
         ((EditText) findViewById(R.id.seat_num)).addTextChangedListener(new TextWatcher() {
@@ -175,7 +160,7 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
                 } else {
                     Log.i("post", "switch to driver");
                     time_sharing.setVisibility(View.VISIBLE);
-                    time_sharing.setHint("driver_time_constraint_in_minute");
+                    time_sharing.setHint("Minutes willing to exceed your original trip time");
                     post_find_button.setText("Post");
                     isDriver = true;
                 }
@@ -223,7 +208,10 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptPost() {
+    private void attemptPost(boolean isDriver) {
+
+        String url = "https://api.extrasmisc.com/rider/";
+
 
 
         //if all inputs are legal
@@ -243,10 +231,10 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
             data.put("scheduled_departure_datetime",date.getText().toString() + "T" + time.getText().toString() + ":00Z");
             Log.i("post","scheduled_departure_datetime:" + date.getText().toString() + "T" + time.getText().toString() + ":00Z");
             data.put("scheduled_departure_time_range_in_minute",time_waiting.getText().toString());
-            data.put("driver_time_constraint_in_minute",time_sharing.getText().toString());
-
-
-            String url = "https://api.extrasmisc.com/driver/";
+            if (isDriver) {
+                data.put("driver_time_constraint_in_minute", time_sharing.getText().toString());
+                url = "https://api.extrasmisc.com/driver/";
+            }
 
             RequestQueue requestQueue = Volley.newRequestQueue(postActivity.this);
 
@@ -285,71 +273,7 @@ public class postActivity extends AppCompatActivity implements LoaderCallbacks<C
         }
     }
 
-    private void attemptFind() {
 
-
-        //if all inputs are legal
-        if (checkInput()) {
-            Log.i("post", "Start auth");
-            String url = "https://api.extrasmisc.com/driver/";
-            RequestQueue requestQueue = Volley.newRequestQueue(postActivity.this);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, new JSONObject(), new com.android.volley.Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    Log.i("post", "success");
-                    Log.i("post", response.toString());
-                    try {
-                        Log.i("post",response.getString("origin_lon"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    Toast.makeText(postActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-                   // finish();
-                    //  Intent intent = new Intent(LoginActivity.this, MapsActivity2.class);
-                    //    intent.putExtra("token",response.getString("token"));
-                    // startActivity(intent);
-                }
-
-            }, new com.android.volley.Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.i("post", error.getMessage());
-                    String response = error.getMessage();
-                    String[] jsonString = response.split("\\},");
-                    JsonParser parser = new JsonParser();
-                    ArrayList<JsonObject> jsonObjects = new ArrayList();
-                    for (String s: jsonString) {
-                        s = s + "}";
-                        JsonObject o = parser.parse(s).getAsJsonObject();
-                        jsonObjects.add(o);
-                        Log.i("post","json: " + s);
-                    }
-
-                    for (JsonObject jo: jsonObjects) {
-                        Log.i("post","id " + jo.get("id").getAsString());
-                    }
-
-
-
-                    Toast toast = Toast.makeText(postActivity.this, "Unable to find", Toast.LENGTH_SHORT);
-                    toast.show();
-
-                }
-            }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("Content-Type", "application/json");
-                    params.put("Authorization", "JWT " + token);
-                    return params;
-                }
-            };
-
-            requestQueue.add(jsonObjectRequest);
-
-        }
-    }
 
 
     /**

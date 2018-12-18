@@ -3,10 +3,16 @@ package com.example.b.rideshare;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.RingtoneManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -38,8 +44,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.FirebaseInstanceIdService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -98,6 +110,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 return false;
             }
         });
+
+        String firebaseToken = FirebaseInstanceId.getInstance().getToken();
+        String firebaseID = FirebaseInstanceId.getInstance().getId();
+        Log.i("FireBaseTokenID",firebaseToken);
+        Log.i("FireBaseID",firebaseID);
+
+
+
 /*
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
@@ -309,7 +329,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 
-    public void tester(View v) {
+    public void register(View v) {
                 Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 startActivity(intent);
 
@@ -320,10 +340,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public void loginTest(View v) {
         Log.i("login","Start auth");
         HashMap data = new HashMap();
-        data.put("username","test2");
-        data.put("password","qwer1234");
-       // data.put("username",mUsernameView.getText().toString());
-      //  data.put("password",mPasswordView.getText().toString());
+       // data.put("username","test2");
+     //   data.put("password","qwer1234");
+        data.put("username",mUsernameView.getText().toString());
+        data.put("password",mPasswordView.getText().toString());
 
         String url ="https://api.extrasmisc.com/token/authorize/";
         showProgress(true);
@@ -415,8 +435,82 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     public void resultTest(View v) {
-        Intent intent = new Intent(LoginActivity.this, ResultActivity.class);
-        startActivity(intent);
+        HashMap data = new HashMap();
+     //   data.put("username","test1");
+      //  data.put("password","qwer1234");
+         data.put("username",mUsernameView.getText().toString());
+          data.put("password",mPasswordView.getText().toString());
+
+        String url ="https://api.extrasmisc.com/token/authorize/";
+        showProgress(true);
+
+
+        RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(data), new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("login","success");
+                showProgress(false);
+
+                try {
+                    Log.i("login",response.getString("token"));
+                    Intent intent = new Intent(LoginActivity.this, ResultActivity.class);
+                    intent.putExtra("token",response.getString("token"));
+                    startActivity(intent);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                showProgress(false);
+
+                Log.i("login","failed");
+                Toast toast = Toast.makeText(LoginActivity.this, "Unable to log in with provided credentials.", Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        });
+
+        requestQueue.add(jsonObjectRequest);
+
+    }
+
+    public void notificationTest(View v) {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        String channelId = "test";
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.cast_ic_notification_0)
+                        .setContentTitle("notification test")
+                        .setContentText("bodyTest")
+                        .setAutoCancel(true)
+                        .setSound(defaultSoundUri)
+                        .setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channelId,
+                    "Channel human readable title",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+
+
     }
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -497,29 +591,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return success;
         }
 
-      /*  public void notificationTest(View v) {
-            // Get token
-            FirebaseInstanceId.getInstance().getInstanceId()
-                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                            if (!task.isSuccessful()) {
-                                Log.w(TAG, "getInstanceId failed", task.getException());
-                                return;
-                            }
 
-                            // Get new Instance ID token
-                            String token = task.getResult().getToken();
-
-                            // Log and toast
-                            String msg = getString(R.string.msg_token_fmt, token);
-                            Log.d(TAG, msg);
-                            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-
-        }*/
 
 
     }

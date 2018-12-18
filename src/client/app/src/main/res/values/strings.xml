@@ -92,7 +92,8 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_login">Sign in</string>
-    <string name="title_activity_register">RegisterActivity</string>
-    <string name="title_activity_profile">ProfileActivity</string>
-    <string name="title_activity_result">ResultActivity</string>
+    <string name="title_activity_register">Register Account</string>
+    <string name="title_activity_profile">Profile Information</string>
+    <string name="title_activity_result">Trips</string>
+    <string name="title_activity_result_map">Trip Details</string>
 </resources>

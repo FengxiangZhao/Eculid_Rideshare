@@ -22,6 +22,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
@@ -34,9 +40,18 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MapsActivity2 extends AppCompatActivity implements
@@ -52,6 +67,10 @@ public class MapsActivity2 extends AppCompatActivity implements
     private Place from, to;
     private String token;
     private LocationManager locationManager;
+    private LatLngBounds.Builder llbuilder = new LatLngBounds.Builder();
+    private Marker fromMarker,toMarker;
+    private Polyline myPolyline;
+    private Boolean isVerified;
 
 
     @Override
@@ -69,32 +88,7 @@ public class MapsActivity2 extends AppCompatActivity implements
         token = getIntent().getExtras().getString("token");
 
         Log.i("token", token);
-
-
-        /*autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(place.getLatLng());
-                markerOptions.title(place.getLatLng().latitude + " : " + place.getLatLng().longitude);
-                mMap.clear();
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(),15.0f));
-                mMap.addMarker(markerOptions);
-                Log.i("autocomplete", "Place: " + place.getName());
-                Intent intent = new Intent(MapsActivity2.this, postActivity.class);
-                startActivity(intent);
-            }
-
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.i("autocomplete", "An error occurred: " + status);
-            }
-        });
-*/
-
+        verifiyUser();
 
     }
 
@@ -116,7 +110,7 @@ public class MapsActivity2 extends AppCompatActivity implements
 
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
-        enableMyLocation();
+     //   enableMyLocation();
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.506491, -81.606372), 12)); //Location of CWRU
 
     }
@@ -149,7 +143,7 @@ public class MapsActivity2 extends AppCompatActivity implements
 
     @Override
     public boolean onMyLocationButtonClick() {
-        Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         locationManager = (LocationManager) getSystemService(MapsActivity2.LOCATION_SERVICE);
      //   if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
@@ -217,14 +211,15 @@ public class MapsActivity2 extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.id_my_trips:
-                //to be implemented
-                Toast.makeText(MapsActivity2.this, "My Trips Clicked", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MapsActivity2.this, ResultActivity.class);
+                intent.putExtra("token", token);
+                startActivity(intent);
                 break;
             case R.id.id_about:
-                showNormalDialog();
+                showNormalDialog("About","1.0");
                 break;
             case R.id.id_my_profiles:
-                Intent intent = new Intent(MapsActivity2.this, ProfileActivity.class);
+                intent = new Intent(MapsActivity2.this, ProfileActivity.class);
                 intent.putExtra("token", token);
                 startActivity(intent);
                 break;
@@ -236,11 +231,11 @@ public class MapsActivity2 extends AppCompatActivity implements
     }
 
 
-    private void showNormalDialog(){
+    private void showNormalDialog(String title, String message){
         final AlertDialog.Builder normalDialog =
                 new AlertDialog.Builder(MapsActivity2.this);
-        normalDialog.setTitle("About");
-        normalDialog.setMessage("Build: alpha 0.3");
+        normalDialog.setTitle(title);
+        normalDialog.setMessage(message);
         normalDialog.setNegativeButton("OK",
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -257,6 +252,9 @@ public class MapsActivity2 extends AppCompatActivity implements
             if (resultCode == RESULT_OK) {
                 TextView tv;
                 Place place = PlaceAutocomplete.getPlace(this, data);
+                llbuilder = new LatLngBounds.Builder();
+
+
                 if (requestCode == 1) { //if it is pickup
                     Log.i("autocomplete", "pickup recieved ");
                     tv = (TextView) findViewById(R.id.pickup);
@@ -265,14 +263,57 @@ public class MapsActivity2 extends AppCompatActivity implements
                     MarkerOptions markerOptions = new MarkerOptions();
                     markerOptions.position(place.getLatLng());
                     markerOptions.title(place.getLatLng().latitude + " : " + place.getLatLng().longitude);
-                    mMap.clear();
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(),15.0f));
-                    mMap.addMarker(markerOptions);
+                    //mMap.clear();
+                    if (fromMarker != null)
+                     fromMarker.remove();
+                    fromMarker = mMap.addMarker(markerOptions);
+                    llbuilder.include(fromMarker.getPosition());
+                    if (toMarker != null)
+                        llbuilder.include(toMarker.getPosition());
+                    LatLngBounds bounds = llbuilder.build();
+                    if (toMarker != null) {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 135));
+                      //  mMap.animateCamera(CameraUpdateFactory.zoomOut());
+                    }
+                    else {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fromMarker.getPosition(), 14.0f));
+                    }
+
                 } else { //if it is dropoff
                     Log.i("autocomplete", "dropoff recieved ");
                     tv = (TextView) findViewById(R.id.drop);
                     fromEntered = true;
                     to = place;
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(place.getLatLng());
+                    markerOptions.title(place.getLatLng().latitude + " : " + place.getLatLng().longitude);
+                    if (toMarker != null)
+                    toMarker.remove();
+                    toMarker = mMap.addMarker(markerOptions);
+                    llbuilder.include(toMarker.getPosition());
+                    if (fromMarker != null)
+                        llbuilder.include(fromMarker.getPosition());
+                    LatLngBounds bounds = llbuilder.build();
+                    if (fromMarker != null) {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 135));
+                       // mMap.animateCamera(CameraUpdateFactory.zoomOut());
+                    }
+                    else {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(toMarker.getPosition(), 14.0f));
+                    }
+
+                }
+
+                if (fromMarker != null && toMarker != null) {
+                    PolylineOptions polylineOptions = new PolylineOptions();
+                    polylineOptions.color( Color.parseColor( "#CC0000FF" ) );
+                    polylineOptions.width( 5 );
+                    polylineOptions.visible( true );
+                    polylineOptions.add(toMarker.getPosition());
+                    polylineOptions.add(fromMarker.getPosition());
+                    if (myPolyline != null)
+                        myPolyline.remove();
+                   // myPolyline = mMap.addPolyline(polylineOptions);
                 }
                 tv.setText(place.getAddress());
                 //assign the textview forecolor
@@ -341,19 +382,59 @@ public class MapsActivity2 extends AppCompatActivity implements
 
     }
 
+    private void verifiyUser() {
+        isVerified = false;
+        RequestQueue requestQueue = Volley.newRequestQueue(MapsActivity2.this);
+        String url ="https://api.extrasmisc.com/account/";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, new JSONObject(), new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("login","success");
+                Log.i("login","response:" + response.toString());
+                try {
+                     if (response.getString("is_email_verified").contains("true")) {
+                         isVerified = true;
+                         Log.i("verifyemail","email Verified");
+                     } else {
+                         showNormalDialog("Email Unverified","Your email is unverified until you click the verification link in the welcome message that is sent to you when you create your account.You won't be able to post trips until your account is verified.");
+                         Button nextButton = (Button)findViewById(R.id.next);
+                         nextButton.setText("email unverified");
+                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("login",error.networkResponse.headers.toString());
+                Toast toast = Toast.makeText(MapsActivity2.this, "Unable to log in with provided credentials.", Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("Content-Type","application/json");
+                params.put("Authorization","JWT " + token);
+                return params;
+            }
+        };
+
+        requestQueue.add(jsonObjectRequest);
+    }
+
     private void enableNextButton() {
-        if (toEntered && fromEntered) {
+        if (toEntered && fromEntered && isVerified) {
             Button nextButton = (Button)findViewById(R.id.next);
             nextButton.setEnabled(true);
         }
 
 
     }
-
-    public void showCost() {
-        //TODO: SHOW COST/ETA
-    }
-
 
 
 

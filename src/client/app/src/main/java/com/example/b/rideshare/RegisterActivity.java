@@ -1,9 +1,11 @@
 package com.example.b.rideshare;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -31,17 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
         email = findViewById(R.id.email);
@@ -50,9 +42,9 @@ public class RegisterActivity extends AppCompatActivity {
 
     public void register(View v) {
 
-    /*    if (!email.getText().toString().endsWith("@case.edu")) {
-            email.setError("Must be Case Mail");
-            startRegister = false;
+        if (!email.getText().toString().endsWith("@case.edu") && !email.getText().toString().endsWith("@cwru.edu")) {
+          //  email.setError("Email must be xxx@case.edu or xxx@cwru.edu");
+            startRegister = true;
         }
 
         if (password.getText().toString().length() < 4) {
@@ -62,20 +54,19 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (startRegister) {
             Log.i("register", "start");
-            Log.i("login","Start auth");
+            Log.i("login", "Start auth");
             HashMap data = new HashMap();
-            data.put("username",username.getText().toString());
-            data.put("password",password.getText().toString());
-            data.put("email",email.getText().toString());
-            data.put("phone",phone.getText().toString());*/
+            data.put("username", username.getText().toString());
+            data.put("password", password.getText().toString());
+            data.put("email", email.getText().toString());
+            data.put("phone", phone.getText().toString());
 
-        Log.i("register", "start");
-        Log.i("login","Start auth");
-        HashMap data = new HashMap();
+        /*
         data.put("username","test3");
         data.put("password","qwer1234");
         data.put("email","fxz121@case.edu");
         data.put("phone","216000002");
+        */
 
 
             String url = "https://api.extrasmisc.com/account/register/";
@@ -87,44 +78,65 @@ public class RegisterActivity extends AppCompatActivity {
                 public void onResponse(JSONObject response) {
                     Log.i("register", "start1");
                     Log.i("register", "success");
-                    finish();
-                    Toast toast = Toast.makeText(RegisterActivity.this, "Register Success!", Toast.LENGTH_SHORT);
-                    toast.show();
+                    showNormalDialog("Success","Register success, please verify your email address otherwise you will not be able to post trips.");
 
 
                 }
             }, new com.android.volley.Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.i("register","failed");
+                    Log.i("register", "failed");
                     Toast toast = Toast.makeText(RegisterActivity.this, "Unable to register.", Toast.LENGTH_SHORT);
                     //decryted byte message
                     String body = new String(error.networkResponse.data);
+
+                    Log.i("register", "message:" + body);
+
                     if (body.contains("username")) {
-                        username.setError("username already used by others");
+                        String tempbody = body.split("\"username\"")[1].split("]")[0].replace(":", "").replace("[", "").replace("\"", "");
+                        username.setError(tempbody);
                     }
                     if (body.contains("email")) {
-                        email.setError("email already used by others");
+                        String tempbody = body.split("\"email\"")[1].split("]")[0].replace(":", "").replace("[", "").replace("\"", "");
+                        email.setError(tempbody);
                     }
 
                     if (body.contains("phone")) {
-                        phone.setError("phone already used by others");
+                        String tempbody = body.split("\"phone\"")[1].split("]")[0].replace(":", "").replace("[", "").replace("\"", "");
+                        phone.setError(tempbody);
                     }
-                    Log.i("register",new String(error.networkResponse.data));
+                    Log.i("register", new String(error.networkResponse.data));
                     toast.show();
 
                 }
             });
 
             requestQueue.add(jsonObjectRequest);
-        //}
 
+
+
+        }
         startRegister = true;
-
 
     }
 
+    private void showNormalDialog(String title, String message){
+        final AlertDialog.Builder normalDialog =
+                new AlertDialog.Builder(RegisterActivity.this);
+        normalDialog.setTitle(title);
+        normalDialog.setMessage(message);
+        normalDialog.setNegativeButton("OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+        normalDialog.show();
+    }
+
     public void cancel(View v) {
+       // showNormalDialog("Success","Register success, please verify your email address otherwise you will not be able to post trips.");
         finish();
     }
 

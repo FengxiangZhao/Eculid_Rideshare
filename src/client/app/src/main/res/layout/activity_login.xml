@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -66,41 +67,59 @@
 
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/button4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="tester"
-                android:text="RegisterTest" />
+                android:onClick="loginTest"
+                android:text="Login" />
 
             <Button
-                android:id="@+id/button4"
+                android:id="@+id/button1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="loginTest"
                 android:text="LoginTest" />
 
             <Button
-                android:id="@+id/button5"
+                android:id="@+id/button3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="authTest"
-                android:text="authTest" />
+                android:onClick="register"
+                android:text="Register" />
 
-            <Button
-                android:id="@+id/button6"
+            <TextView
+                android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="resultTest"
-                android:text="resultTest" />
-
-            <Button
-                android:id="@+id/button7"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="notificationTest"
-                android:text="Notification" />
+                android:layout_weight="1"
+                android:text="Forget password? Email meppadevx@gmail.com" />
 
 
-        </LinearLayout>
-    </ScrollView>
+
+                       <Button
+                           android:id="@+id/button5"
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:onClick="authTest"
+                           android:text="authTest" />
+
+                       <Button
+                           android:id="@+id/button6"
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:onClick="resultTest"
+                           android:text="resultTest" />
+
+                       <Button
+                           android:id="@+id/button7"
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:onClick="notificationTest"
+                           android:text="Notification" />
+
+
+
+                   </LinearLayout>
+               </ScrollView>
+
 </LinearLayout>

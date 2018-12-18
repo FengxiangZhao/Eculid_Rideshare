@@ -1,4 +1,4 @@
-package com.example.b.rideshare.models;
+package com.example.b.rideshare;
 
 import android.util.Log;
 

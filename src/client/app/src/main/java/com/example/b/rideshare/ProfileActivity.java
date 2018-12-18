@@ -36,14 +36,6 @@ public class ProfileActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         username = findViewById(R.id.username);
         id = findViewById(R.id.id);
@@ -59,7 +51,7 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 Log.i("login","success");
-                Log.i("login",response.toString());
+                Log.i("login","response:" + response.toString());
                 try {
                     phone.setText(response.getString("phone"));
                     username.setText(response.getString("username"));
@@ -89,6 +81,10 @@ public class ProfileActivity extends AppCompatActivity {
         };
 
         requestQueue.add(jsonObjectRequest);
+    }
+
+    public void change(View v) {
+        finish();
     }
 
 

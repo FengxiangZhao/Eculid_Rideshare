@@ -92,7 +92,6 @@
                     android:imeOptions="actionUnspecified"
                     android:inputType="number"
                     android:maxLines="1"
-                    android:onClick="selectNumSeats"
                     android:singleLine="true" />
 
             </android.support.design.widget.TextInputLayout>
@@ -147,7 +146,7 @@
                     android:id="@+id/time_timewaiting"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="How long you are willing to wait"
+                    android:hint="Minutes willing to wait"
                     android:imeActionId="6"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
